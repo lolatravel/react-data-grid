@@ -16,6 +16,7 @@ function Row<R, SR = unknown>({
   row,
   viewportColumns,
   selectedCellProps,
+  selectedPosition,
   onRowClick,
   rowClass,
   setDraggedOverRowIdx,
@@ -24,12 +25,13 @@ function Row<R, SR = unknown>({
   onRowChange,
   selectCell,
   selectRow,
+  handleCellMouseDown,
   'aria-rowindex': ariaRowIndex,
   'aria-selected': ariaSelected,
   ...props
 }: RowRendererProps<R, SR>, ref: React.Ref<HTMLDivElement>) {
-  function handleDragEnter() {
-    setDraggedOverRowIdx?.(rowIdx);
+  function handleDragEnter(colIdx) {
+    setDraggedOverRowIdx?.(rowIdx, colIdx);
   }
 
   className = clsx(
@@ -75,7 +77,7 @@ function Row<R, SR = unknown>({
             column={column}
             row={row}
             isCopied={copiedCellIdx === column.idx}
-            isDraggedOver={draggedOverCellIdx === column.idx}
+            isDraggedOver={draggedOverCellIdx(rowIdx, column.idx) === column.idx}
             isCellSelected={isCellSelected}
             isRowSelected={isRowSelected}
             dragHandleProps={isCellSelected ? (selectedCellProps as SelectedCellProps).dragHandleProps : undefined}
@@ -85,6 +87,9 @@ function Row<R, SR = unknown>({
             onRowChange={onRowChange}
             selectCell={selectCell}
             selectRow={selectRow}
+            handleCellMouseDown={handleCellMouseDown}
+            handleDragEnter={wrapEvent(handleDragEnter, onMouseEnter)}
+            selectedPosition={selectedPosition}
           />
         );
       })}

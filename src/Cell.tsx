@@ -1,4 +1,4 @@
-import { forwardRef, memo, useRef } from 'react';
+import { forwardRef, memo, useRef, useState } from 'react';
 import clsx from 'clsx';
 
 import type { CellRendererProps } from './types';
@@ -21,10 +21,14 @@ function Cell<R, SR>({
   onContextMenu,
   onRowChange,
   selectCell,
+  handleCellMouseDown,
+  selectedPosition,
   selectRow,
+  handleDragEnter,
   ...props
 }: CellRendererProps<R, SR>, ref: React.Ref<HTMLDivElement>) {
   const cellRef = useRef<HTMLDivElement>(null);
+  const [isLastDragged, setIsLastDragged] = useState(false);
 
   const { cellClass } = column;
   className = clsx(
@@ -47,6 +51,26 @@ function Cell<R, SR>({
   function handleClick() {
     selectCellWrapper(column.editorOptions?.editOnClick);
     onRowClick?.(rowIdx, row, column);
+  }
+
+  function handleMouseDown(event) {
+      selectCellWrapper(false);
+      setIsLastDragged(false);
+      handleCellMouseDown(event);
+  }
+
+  function handleMouseEnter(event) {
+      if (event.buttons === 1) {
+          console.log(column);
+          handleDragEnter(column.idx);
+          setIsLastDragged(true);
+      }
+  }
+
+  function handleMouseLeave(event) {
+      if (event.buttons === 1) {
+          setIsLastDragged(false);
+      }
   }
 
   function handleContextMenu() {
@@ -77,12 +101,22 @@ function Cell<R, SR>({
         left: column.left
       }}
       onClick={wrapEvent(handleClick, onClick)}
+      onMouseDown={handleMouseDown}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       onDoubleClick={wrapEvent(handleDoubleClick, onDoubleClick)}
       onContextMenu={wrapEvent(handleContextMenu, onContextMenu)}
       {...props}
     >
       {!column.rowGroup && (
         <>
+          <div
+            className={clsx('rdg-cell-fake-background', {
+              // 'rdg-cell-fake-background-active': isDraggedOver,
+              // 'rdg-cell-fake-background-active-last': isLastDragged && isDraggedOver && selectedPosition.rowIdx < rowIdx,
+              // 'rdg-cell-fake-background-active-first': isLastDragged && isDraggedOver && selectedPosition.rowIdx > rowIdx
+            })}
+          />
           <column.formatter
             column={column}
             rowIdx={rowIdx}

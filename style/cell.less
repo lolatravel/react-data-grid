@@ -3,9 +3,9 @@
   contain: size layout style paint;
   position: absolute;
   height: inherit;
-  padding: 0 8px;
-  border-right: 1px solid var(--border-color);
-  border-bottom: 1px solid var(--border-color);
+  padding: 0 18px;
+  border-right: 0px solid var(--border-color);
+  border-bottom: 0px solid var(--border-color);
   background-color: inherit;
 
   white-space: nowrap;
@@ -24,21 +24,28 @@
 }
 
 .rdg-cell-selected {
-  box-shadow: inset 0 0 0 2px var(--selection-color);
+  box-shadow: none;
 }
 
 .rdg-cell-copied {
   background-color: #ccccff;
 }
 
+.rdg-cell-selected {
+    & > .rdg-cell-fake-background {
+        border: 1px solid var(--selection-color);
+    }
+}
+
 .rdg-cell-drag-handle {
-  cursor: move;
+  cursor: crosshair;
   position: absolute;
   right: 0;
   bottom: 0;
   width: 8px;
   height: 8px;
   background-color: var(--selection-color);
+  z-index: 11;
 
   &:hover {
     width: 16px;
@@ -48,8 +55,33 @@
   }
 }
 
+.rdg-cell-fake-background {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: transparent;
+    left: 0;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+}
+
+.rdg-cell-fake-background-active {
+    border-left: 1px solid var(--selection-color);
+    border-right: 1px solid var(--selection-color);
+}
+
+.rdg-cell-fake-background-active-last {
+    border-bottom: 1px solid var(--selection-color);
+}
+
+.rdg-cell-fake-background-active-first {
+    border-top: 1px solid var(--selection-color);
+}
+
 .rdg-cell-dragged-over {
-  background-color: #ccccff;
+  background-color: #f7f7f8;
 }
 
 .rdg-cell-copied.rdg-cell-dragged-over {

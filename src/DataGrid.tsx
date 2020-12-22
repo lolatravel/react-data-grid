@@ -220,6 +220,7 @@ function DataGrid<R, SR>({
   const [copiedCell, setCopiedCell] = useState<{ row: R; columnKey: string } | null>(null);
   const [isDragging, setDragging] = useState(false);
   const [draggedOverRowIdx, setOverRowIdx] = useState<number | undefined>(undefined);
+  const [draggedOverColumnIdx, setOverColIdx] = useState<array | undefined>(undefined);
 
   /**
    * refs
@@ -229,6 +230,7 @@ function DataGrid<R, SR>({
   const latestDraggedOverRowIdx = useRef(draggedOverRowIdx);
   const lastSelectedRowIdx = useRef(-1);
   const isCellFocusable = useRef(false);
+  const firstSelectedColIdx = useRef(-1);
 
   /**
    * The identity of the wrapper function is stable so it won't break memoization
@@ -314,9 +316,27 @@ function DataGrid<R, SR>({
     onColumnResize?.(column.idx, width);
   }, [columnWidths, onColumnResize]);
 
-  const setDraggedOverRowIdx = useCallback((rowIdx?: number) => {
+  const setDraggedOverRowIdx = useCallback((rowIdx?: number, colIdx?: number) => {
+    console.log(colIdx, firstSelectedColIdx.current);
     setOverRowIdx(rowIdx);
     latestDraggedOverRowIdx.current = rowIdx;
+
+    const selectedCellColIdx = firstSelectedColIdx.current;
+
+    if (!colIdx && selectedCellColIdx) {
+        setOverColIdx([selectedCellColIdx]);
+        // latestDraggedOverColumnIdx.current = [selectedCellColIdx];
+    }
+
+    if (colIdx) {
+        const colIdxArray = [];
+        for (let i = selectedCellColIdx; i <= colIdx; i++) {
+            colIdxArray.push(i);
+        }
+        console.log(colIdxArray);
+        setOverColIdx(colIdxArray);
+        // latestDraggedOverColumnIdx.current = colIdxArray;
+    }
   }, []);
 
   /**
@@ -541,7 +561,7 @@ function DataGrid<R, SR>({
       updatedRows[i] = updatedTargetRows[i - startRowIndex];
     }
     onRowsChange(updatedRows);
-    setDraggedOverRowIdx(undefined);
+    // setDraggedOverRowIdx(undefined);
   }
 
   function handleMouseDown(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
@@ -562,6 +582,26 @@ function DataGrid<R, SR>({
       window.removeEventListener('mouseup', onMouseUp);
       setDragging(false);
       handleDragEnd();
+    }
+  }
+
+  function handleCellMouseDown(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    if (event.buttons !== 1) return;
+    setDragging(true);
+    window.addEventListener('mouseover', onMouseOver);
+    window.addEventListener('mouseup', onMouseUp);
+
+    function onMouseOver(event: MouseEvent) {
+      // Trigger onMouseup in edge cases where we release the mouse button but `mouseup` isn't triggered,
+      // for example when releasing the mouse button outside the iframe the grid is rendered in.
+      // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
+      if (event.buttons !== 1) onMouseUp();
+    }
+
+    function onMouseUp() {
+      window.removeEventListener('mouseover', onMouseOver);
+      window.removeEventListener('mouseup', onMouseUp);
+      setDragging(false);
     }
   }
 
@@ -622,11 +662,14 @@ function DataGrid<R, SR>({
     if (!isCellWithinBounds(position)) return;
     commitEditorChanges();
 
+    setDraggedOverRowIdx(undefined);
+
     if (enableEditor && isCellEditable(position)) {
       const row = rows[position.rowIdx] as R;
       setSelectedPosition({ ...position, mode: 'EDIT', key: null, row, originalRow: row });
     } else {
       setSelectedPosition({ ...position, mode: 'SELECT' });
+      firstSelectedColIdx.current = position.idx;
     }
     onSelectedCellChange?.({ ...position });
   }
@@ -754,15 +797,22 @@ function DataGrid<R, SR>({
     selectCell(nextPosition);
   }
 
-  function getDraggedOverCellIdx(currentRowIdx: number): number | undefined {
+  function getDraggedOverCellIdx(currentRowIdx: number, colIdx: number): number | undefined {
+    console.log(draggedOverRowIdx, draggedOverColumnIdx);
     if (draggedOverRowIdx === undefined) return;
     const { rowIdx } = selectedPosition;
 
-    const isDraggedOver = rowIdx < draggedOverRowIdx
-      ? rowIdx < currentRowIdx && currentRowIdx <= draggedOverRowIdx
-      : rowIdx > currentRowIdx && currentRowIdx >= draggedOverRowIdx;
+    let isDraggedOver = false;
 
-    return isDraggedOver ? selectedPosition.idx : undefined;
+    if (rowIdx === draggedOverRowIdx && currentRowIdx === rowIdx) {
+        isDraggedOver = draggedOverColumnIdx.some(i => i === colIdx);
+    } else {
+        isDraggedOver = rowIdx <= draggedOverRowIdx
+          ? rowIdx <= currentRowIdx && currentRowIdx <= draggedOverRowIdx && draggedOverColumnIdx.some(i => i === colIdx)
+          : rowIdx > currentRowIdx && currentRowIdx >= draggedOverRowIdx && draggedOverColumnIdx.some(i => i === colIdx);
+    }
+
+    return isDraggedOver ? colIdx : undefined;
   }
 
   function getSelectedCellProps(rowIdx: number): SelectedCellProps | EditCellProps<R> | undefined {
@@ -850,12 +900,14 @@ function DataGrid<R, SR>({
           rowClass={rowClass}
           top={top}
           copiedCellIdx={copiedCell !== null && copiedCell.row === row ? columns.findIndex(c => c.key === copiedCell.columnKey) : undefined}
-          draggedOverCellIdx={getDraggedOverCellIdx(rowIdx)}
+          draggedOverCellIdx={getDraggedOverCellIdx}
           setDraggedOverRowIdx={isDragging ? setDraggedOverRowIdx : undefined}
           selectedCellProps={getSelectedCellProps(rowIdx)}
           onRowChange={handleFormatterRowChangeWrapper}
           selectCell={selectCellWrapper}
           selectRow={selectRowWrapper}
+          handleCellMouseDown={handleCellMouseDown}
+          selectedPosition={selectedPosition}
         />
       );
     }

@@ -123,6 +123,7 @@ export default function HeaderCell<R, SR>({
       style={style}
       onPointerDown={column.resizable ? onPointerDown : undefined}
     >
+        <div className={clsx('rdg-cell-fake-background')} />
       {getCell()}
     </div>
   );
