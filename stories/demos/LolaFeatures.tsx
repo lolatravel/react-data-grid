@@ -1,9 +1,7 @@
 import faker from 'faker';
 import { useState, useRef } from 'react';
-import DataGrid, { SelectColumn, TextEditor } from '../../src';
+import DataGrid, { TextEditor } from '../../src';
 import type { Column, DataGridHandle, FillEvent, PasteEvent } from '../../src';
-import DropDownEditor from './components/Editors/DropDownEditor';
-import { ImageFormatter } from './components/Formatters';
 
 import './AllFeatures.less';
 
@@ -18,6 +16,8 @@ export interface Row {
     'Nov 2020': string,
     'Dec 2020': string
 }
+
+export interface TSummaryRow {}
 
 function rowKeyGetter(row: Row) {
   return row.id;
@@ -36,43 +36,50 @@ const columns: readonly Column<Row>[] = [
       key: 'Jun 2020',
       name: 'Jun 2020',
       width: 116,
-      editor: TextEditor
+      editor: TextEditor,
+      alignment: 'right'
     },
     {
       key: 'Jul 2020',
       name: 'Jul 2020',
       width: 116,
-      editor: TextEditor
+      editor: TextEditor,
+      alignment: 'right'
     },
     {
       key: 'Aug 2020',
       name: 'Aug 2020',
       width: 116,
-      editor: TextEditor
+      editor: TextEditor,
+      alignment: 'right'
     },
     {
       key: 'Sep 2020',
       name: 'Sep 2020',
       width: 116,
-      editor: TextEditor
+      editor: TextEditor,
+      alignment: 'right'
     },
     {
       key: 'Oct 2020',
       name: 'Oct 2020',
       width: 116,
-      editor: TextEditor
+      editor: TextEditor,
+      alignment: 'right'
     },
     {
       key: 'Nov 2020',
       name: 'Nov 2020',
       width: 116,
-      editor: TextEditor
+      editor: TextEditor,
+      alignment: 'right'
     },
     {
       key: 'Dec 2020',
       name: 'Dec 2020',
       width: 116,
-      editor: TextEditor
+      editor: TextEditor,
+      alignment: 'right'
     }
 ];
 
@@ -123,20 +130,25 @@ export function LolaFeatures() {
   const [isLoading, setIsLoading] = useState(false);
   const gridRef = useRef<DataGridHandle>(null);
 
-  function handleFill({ columnKey, sourceRow, targetRows }: FillEvent<Row>): Row[] {
+  function handleFill({ columnKey, targetCols, sourceRow, targetRows, across }: FillEvent<Row, TSummaryRow>): Row[] {
+      if (across) {
+          return targetRows.map(row => {
+              let newRow = row;
+              targetCols.forEach(col => {
+                  newRow = { ...newRow, [col.key]: row[columnKey] };
+              });
+              return newRow;
+          });
+      }
     return targetRows.map(row => ({ ...row, [columnKey as keyof Row]: sourceRow[columnKey as keyof Row] }));
   }
 
-  function handlePaste({ sourceColumnKey, sourceRow, targetColumnKey, targetRow }: PasteEvent<Row>): Row {
-    const incompatibleColumns = ['email', 'zipCode', 'date'];
-    if (
-      sourceColumnKey === 'avatar'
-      || ['id', 'avatar'].includes(targetColumnKey)
-      || ((incompatibleColumns.includes(targetColumnKey) || incompatibleColumns.includes(sourceColumnKey)) && sourceColumnKey !== targetColumnKey)) {
-      return targetRow;
+  function handlePaste({ sourceColumnKey, sourceRows, targetColumnKey, targetRows }: PasteEvent<Row>): Row[] {
+    if (sourceRows.length === 1) {
+        return [{ ...targetRows[0], [targetColumnKey]: sourceRows[0][sourceColumnKey as keyof Row] }];
     }
 
-    return { ...targetRow, [targetColumnKey]: sourceRow[sourceColumnKey as keyof Row] };
+    return targetRows.map((row, i) => ({ ...row, [targetColumnKey]: sourceRows[i][sourceColumnKey as keyof Row] }));
   }
 
   async function handleScroll(event: React.UIEvent<HTMLDivElement>) {

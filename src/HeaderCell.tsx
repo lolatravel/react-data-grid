@@ -107,7 +107,8 @@ export default function HeaderCell<R, SR>({
   const className = clsx('rdg-cell', column.headerCellClass, {
     'rdg-cell-resizable': column.resizable,
     'rdg-cell-frozen': column.frozen,
-    'rdg-cell-frozen-last': column.isLastFrozenColumn
+    'rdg-cell-frozen-last': column.isLastFrozenColumn,
+    'rdg-cell-align-right': column.alignment === 'right'
   });
   const style: React.CSSProperties = {
     width: column.width,

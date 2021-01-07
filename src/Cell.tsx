@@ -1,4 +1,4 @@
-import { forwardRef, memo, useRef, useState } from 'react';
+import { forwardRef, memo, useRef } from 'react';
 import clsx from 'clsx';
 
 import type { CellRendererProps } from './types';
@@ -16,7 +16,6 @@ function Cell<R, SR>({
   rowIdx,
   dragHandleProps,
   onRowClick,
-  onClick,
   onDoubleClick,
   onContextMenu,
   onRowChange,
@@ -25,10 +24,16 @@ function Cell<R, SR>({
   selectedPosition,
   selectRow,
   handleDragEnter,
+  draggedOverRowIdx,
+  draggedOverColumnIdx,
+  hasFirstCopiedCell,
+  hasLastCopiedCell,
+  isFilling,
+  bottomRowIdx,
+  selectedCellsInfo,
   ...props
 }: CellRendererProps<R, SR>, ref: React.Ref<HTMLDivElement>) {
   const cellRef = useRef<HTMLDivElement>(null);
-  const [isLastDragged, setIsLastDragged] = useState(false);
 
   const { cellClass } = column;
   className = clsx(
@@ -38,38 +43,50 @@ function Cell<R, SR>({
       'rdg-cell-frozen-last': column.isLastFrozenColumn,
       'rdg-cell-selected': isCellSelected,
       'rdg-cell-copied': isCopied,
-      'rdg-cell-dragged-over': isDraggedOver
+      'rdg-cell-dragged-over': checkIsDraggedOver(),
+      'rdg-cell-align-right': column.alignment === 'right'
     },
     typeof cellClass === 'function' ? cellClass(row) : cellClass,
     className
   );
 
-  function selectCellWrapper(openEditor?: boolean) {
-    selectCell({ idx: column.idx, rowIdx }, openEditor);
+  function checkIsDraggedOver() {
+      if (selectedCellsInfo === selectedPosition.rowIdx && isFilling) {
+          return false;
+      }
+
+      if (selectedCellsInfo !== selectedPosition.rowIdx && column.idx !== draggedOverColumnIdx?.[0] && isFilling) {
+          return false;
+      }
+
+      return isDraggedOver;
   }
 
-  function handleClick() {
+  function selectCellWrapper(openEditor?: boolean) {
+    if (!dragHandleProps) {
+        selectCell({ idx: column.idx, rowIdx }, openEditor);
+    }
+
+    if (dragHandleProps && openEditor) {
+        selectCell({ idx: column.idx, rowIdx }, openEditor);
+    }
+  }
+
+  function handleClick(event: React.MouseEvent<HTMLDivElement>) {
+    event.preventDefault();
     selectCellWrapper(column.editorOptions?.editOnClick);
     onRowClick?.(rowIdx, row, column);
   }
 
-  function handleMouseDown(event) {
+  function handleMouseDown(event: React.MouseEvent<HTMLDivElement>) {
+      event.preventDefault();
       selectCellWrapper(false);
-      setIsLastDragged(false);
       handleCellMouseDown(event);
   }
 
-  function handleMouseEnter(event) {
+  function handleMouseEnter(event: React.MouseEvent<HTMLDivElement>) {
       if (event.buttons === 1) {
-          console.log(column);
-          handleDragEnter(column.idx);
-          setIsLastDragged(true);
-      }
-  }
-
-  function handleMouseLeave(event) {
-      if (event.buttons === 1) {
-          setIsLastDragged(false);
+        handleDragEnter(column.idx);
       }
   }
 
@@ -89,6 +106,54 @@ function Cell<R, SR>({
     selectRow({ rowIdx, checked, isShiftClick });
   }
 
+  function checkForTopActiveBorder(): boolean {
+      if (isFilling) {
+          if (selectedPosition.rowIdx === rowIdx && isDraggedOver && selectedPosition.rowIdx !== bottomRowIdx) {
+              return true;
+          }
+
+          if (selectedPosition.rowIdx === bottomRowIdx && isDraggedOver && draggedOverRowIdx === rowIdx && !checkIsDraggedOver()) {
+              return true;
+          }
+      }
+
+      if (isCopied && hasFirstCopiedCell) {
+          return true;
+      }
+
+      return false;
+  }
+
+  function checkForBottomActiveBorder(): boolean {
+      if (isFilling && rowIdx === bottomRowIdx && !checkIsDraggedOver() && isDraggedOver) {
+          return true;
+      }
+
+      if (isCopied && hasLastCopiedCell) {
+          return true;
+      }
+
+      return false;
+  }
+
+  function checkForRightActiveBorder(): boolean {
+      if (
+          isFilling &&
+          draggedOverColumnIdx &&
+          draggedOverColumnIdx[draggedOverColumnIdx.length - 1] === column.idx &&
+          isDraggedOver &&
+          !checkIsDraggedOver()
+      ) {
+          return true;
+      }
+
+      if (isCopied) {
+          return true;
+      }
+
+      return false;
+  }
+
   return (
     <div
       role="gridcell"
@@ -100,23 +165,23 @@ function Cell<R, SR>({
         width: column.width,
         left: column.left
       }}
-      onClick={wrapEvent(handleClick, onClick)}
+      onClick={handleClick}
       onMouseDown={handleMouseDown}
       onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
       onDoubleClick={wrapEvent(handleDoubleClick, onDoubleClick)}
       onContextMenu={wrapEvent(handleContextMenu, onContextMenu)}
       {...props}
     >
       {!column.rowGroup && (
         <>
-          <div
-            className={clsx('rdg-cell-fake-background', {
-              // 'rdg-cell-fake-background-active': isDraggedOver,
-              // 'rdg-cell-fake-background-active-last': isLastDragged && isDraggedOver && selectedPosition.rowIdx < rowIdx,
-              // 'rdg-cell-fake-background-active-first': isLastDragged && isDraggedOver && selectedPosition.rowIdx > rowIdx
-            })}
-          />
+          <div className={clsx(
+            'rdg-cell-fake-background',
+            {
+              'rdg-cell-fake-background-active-top': checkForTopActiveBorder(),
+              'rdg-cell-fake-background-active-bottom': checkForBottomActiveBorder(),
+              'rdg-cell-fake-background-active-right': checkForRightActiveBorder(),
+              'rdg-cell-fake-background-active-left': (isFilling && draggedOverColumnIdx && draggedOverColumnIdx[0] === column.idx && isDraggedOver && !checkIsDraggedOver()) || isCopied
+          })} />
           <column.formatter
             column={column}
             rowIdx={rowIdx}

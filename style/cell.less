@@ -28,7 +28,11 @@
 }
 
 .rdg-cell-copied {
-  background-color: #ccccff;
+  background-color: #f7f7f8;
+}
+
+.rdg-cell-align-right {
+    text-align: right;
 }
 
 .rdg-cell-selected {
@@ -72,12 +76,20 @@
     border-right: 1px solid var(--selection-color);
 }
 
-.rdg-cell-fake-background-active-last {
-    border-bottom: 1px solid var(--selection-color);
+.rdg-cell-fake-background-active-bottom {
+    border-bottom: 1px dashed var(--selection-color);
 }
 
-.rdg-cell-fake-background-active-first {
-    border-top: 1px solid var(--selection-color);
+.rdg-cell-fake-background-active-top {
+    border-top: 1px dashed var(--selection-color);
+}
+
+.rdg-cell-fake-background-active-right {
+    border-right: 1px dashed var(--selection-color);
+}
+
+.rdg-cell-fake-background-active-left {
+    border-left: 1px dashed var(--selection-color);
 }
 
 .rdg-cell-dragged-over {
@@ -85,7 +97,7 @@
 }
 
 .rdg-cell-copied.rdg-cell-dragged-over {
-  background-color: #9999ff;
+  background-color: #f7f7f8;
 }
 
 .rdg-cell-editing {
