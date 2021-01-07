@@ -54,6 +54,7 @@ export interface Column<TRow, TSummaryRow = unknown> {
   headerRenderer?: React.ComponentType<HeaderRendererProps<TRow, TSummaryRow>>;
   /** Component to be used to filter the data of the column */
   filterRenderer?: React.ComponentType<FilterRendererProps<TRow, any, TSummaryRow>>;
+  alignment?: string;
 }
 
 export interface CalculatedColumn<TRow, TSummaryRow = unknown> extends Column<TRow, TSummaryRow> {
@@ -65,6 +66,7 @@ export interface CalculatedColumn<TRow, TSummaryRow = unknown> extends Column<TR
   isLastFrozenColumn?: boolean;
   rowGroup?: boolean;
   formatter: React.ComponentType<FormatterProps<TRow, TSummaryRow>>;
+  alignment?: string;
 }
 
 export interface Position {
@@ -151,6 +153,16 @@ export interface CellRendererProps<TRow, TSummaryRow = unknown> extends Omit<Rea
   onRowClick?: (rowIdx: number, row: TRow, column: CalculatedColumn<TRow, TSummaryRow>) => void;
   selectCell: (position: Position, enableEditor?: boolean) => void;
   selectRow: (selectRowEvent: SelectRowEvent) => void;
+  handleCellMouseDown: (event: React.MouseEvent<HTMLDivElement>) => void;
+  selectedPosition: SelectCellState | EditCellState<TRow>;
+  handleDragEnter: (colIdx: number) => void;
+  draggedOverRowIdx?: number;
+  draggedOverColumnIdx?: number[];
+  hasFirstCopiedCell: boolean;
+  hasLastCopiedCell: boolean;
+  isFilling: boolean;
+  bottomRowIdx: number;
+  selectedCellsInfo: number | undefined;
 }
 
 export interface RowRendererProps<TRow, TSummaryRow = unknown> extends Omit<React.HTMLAttributes<HTMLDivElement>, 'style' | 'children'> {
@@ -159,7 +171,7 @@ export interface RowRendererProps<TRow, TSummaryRow = unknown> extends Omit<Reac
   cellRenderer?: React.ComponentType<CellRendererProps<TRow, TSummaryRow>>;
   rowIdx: number;
   copiedCellIdx?: number;
-  draggedOverCellIdx?: number;
+  getDraggedOverCellIdx: (currentRowIdx: number, colIdx: number) => number | undefined;
   isRowSelected: boolean;
   top: number;
   selectedCellProps?: EditCellProps<TRow> | SelectedCellProps;
@@ -169,6 +181,18 @@ export interface RowRendererProps<TRow, TSummaryRow = unknown> extends Omit<Reac
   setDraggedOverRowIdx?: (overRowIdx: number) => void;
   selectCell: (position: Position, enableEditor?: boolean) => void;
   selectRow: (selectRowEvent: SelectRowEvent) => void;
+  selectedPosition: SelectCellState | EditCellState<TRow>;
+  isFilling: boolean;
+  isMultipleRows: boolean;
+  selectedCellsInfo: number | undefined;
+  setDraggedOverColumnIdx?: (colIdx: number) => void;
+  hasFirstCopiedCell: boolean;
+  hasLastCopiedCell: boolean;
+  handleCellMouseDown: (event: React.MouseEvent<HTMLDivElement>) => void;
+  bottomRowIdx: number;
+  dragHandleProps?: Pick<React.HTMLAttributes<HTMLDivElement>, 'onMouseDown' | 'onDoubleClick'>;
+  draggedOverRowIdx?: number;
+  draggedOverColumnIdx?: number[];
 }
 
 export interface FilterRendererProps<TRow, TFilterValue = unknown, TSummaryRow = unknown> {
@@ -185,17 +209,19 @@ export interface SelectRowEvent {
   isShiftClick: boolean;
 }
 
-export interface FillEvent<TRow> {
+export interface FillEvent<TRow, TSummaryRow> {
   columnKey: string;
   sourceRow: TRow;
   targetRows: TRow[];
+  targetCols?: CalculatedColumn<TRow, TSummaryRow>[];
+  across?: boolean;
 }
 
 export interface PasteEvent<TRow> {
   sourceColumnKey: string;
-  sourceRow: TRow;
+  sourceRows: TRow[];
   targetColumnKey: string;
-  targetRow: TRow;
+  targetRows: TRow[];
 }
 
 export type GroupByDictionary<TRow> = Record<string, {
@@ -214,4 +240,15 @@ export interface GroupRow<TRow> {
   posInSet: number;
   setSize: number;
   startRowIndex: number;
+}
+
+interface SelectCellState extends Position {
+  mode: 'SELECT';
+}
+
+interface EditCellState<R> extends Position {
+  mode: 'EDIT';
+  row: R;
+  originalRow: R;
+  key: string | null;
 }

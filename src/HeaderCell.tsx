@@ -107,7 +107,8 @@ export default function HeaderCell<R, SR>({
   const className = clsx('rdg-cell', column.headerCellClass, {
     'rdg-cell-resizable': column.resizable,
     'rdg-cell-frozen': column.frozen,
-    'rdg-cell-frozen-last': column.isLastFrozenColumn
+    'rdg-cell-frozen-last': column.isLastFrozenColumn,
+    'rdg-cell-align-right': column.alignment === 'right'
   });
   const style: React.CSSProperties = {
     width: column.width,
@@ -123,6 +124,7 @@ export default function HeaderCell<R, SR>({
       style={style}
       onPointerDown={column.resizable ? onPointerDown : undefined}
     >
+        <div className={clsx('rdg-cell-fake-background')} />
       {getCell()}
     </div>
   );

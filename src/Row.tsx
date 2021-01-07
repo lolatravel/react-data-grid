@@ -4,32 +4,68 @@ import clsx from 'clsx';
 import Cell from './Cell';
 import EditCell from './EditCell';
 import type { RowRendererProps, SelectedCellProps } from './types';
-import { wrapEvent } from './utils';
 
 function Row<R, SR = unknown>({
   cellRenderer: CellRenderer = Cell,
   className,
+  id,
   rowIdx,
   isRowSelected,
   copiedCellIdx,
-  draggedOverCellIdx,
+  getDraggedOverCellIdx,
   row,
   viewportColumns,
   selectedCellProps,
+  selectedPosition,
+  isFilling,
+  isMultipleRows,
   onRowClick,
   rowClass,
+  selectedCellsInfo,
   setDraggedOverRowIdx,
-  onMouseEnter,
+  setDraggedOverColumnIdx,
+  hasFirstCopiedCell,
+  hasLastCopiedCell,
   top,
   onRowChange,
   selectCell,
   selectRow,
+  handleCellMouseDown,
+  bottomRowIdx,
+  dragHandleProps,
+  draggedOverRowIdx,
+  draggedOverColumnIdx,
   'aria-rowindex': ariaRowIndex,
   'aria-selected': ariaSelected,
   ...props
 }: RowRendererProps<R, SR>, ref: React.Ref<HTMLDivElement>) {
-  function handleDragEnter() {
-    setDraggedOverRowIdx?.(rowIdx);
+  function handleDragEnter(colIdx: number) {
+      if (isFilling && selectedCellsInfo) {
+          if (selectedCellsInfo === selectedPosition.rowIdx) {
+              if (colIdx === selectedPosition.idx) {
+                  setDraggedOverRowIdx?.(rowIdx);
+              } else {
+                  setDraggedOverRowIdx?.(selectedCellsInfo);
+              }
+          } else {
+              setDraggedOverRowIdx?.(selectedCellsInfo);
+          }
+      } else {
+          setDraggedOverRowIdx?.(rowIdx);
+      }
+    if (isFilling) {
+        setDraggedOverColumnIdx?.(colIdx);
+    } else {
+        setDraggedOverColumnIdx?.(selectedPosition.idx);
+    }
+  }
+
+  function hasJustFilled() {
+      if (draggedOverColumnIdx && draggedOverColumnIdx.length > 1 && !isFilling) {
+          return true;
+      }
+
+      return false;
   }
 
   className = clsx(
@@ -49,12 +85,12 @@ function Row<R, SR = unknown>({
       aria-selected={ariaSelected}
       ref={ref}
       className={className}
-      onMouseEnter={wrapEvent(handleDragEnter, onMouseEnter)}
       style={{ top }}
       {...props}
     >
       {viewportColumns.map(column => {
         const isCellSelected = selectedCellProps?.idx === column.idx;
+        const isBottomCell = rowIdx === bottomRowIdx && column.idx === selectedPosition.idx;
         if (selectedCellProps?.mode === 'EDIT' && isCellSelected) {
           return (
             <EditCell<R, SR>
@@ -75,16 +111,26 @@ function Row<R, SR = unknown>({
             column={column}
             row={row}
             isCopied={copiedCellIdx === column.idx}
-            isDraggedOver={draggedOverCellIdx === column.idx}
+            hasFirstCopiedCell={hasFirstCopiedCell}
+            hasLastCopiedCell={hasLastCopiedCell}
+            isDraggedOver={getDraggedOverCellIdx(rowIdx, column.idx) === column.idx}
             isCellSelected={isCellSelected}
             isRowSelected={isRowSelected}
-            dragHandleProps={isCellSelected ? (selectedCellProps as SelectedCellProps).dragHandleProps : undefined}
+            dragHandleProps={isBottomCell && !hasJustFilled() ? dragHandleProps : undefined}
             onFocus={isCellSelected ? (selectedCellProps as SelectedCellProps).onFocus : undefined}
             onKeyDown={isCellSelected ? selectedCellProps!.onKeyDown : undefined}
             onRowClick={onRowClick}
             onRowChange={onRowChange}
             selectCell={selectCell}
             selectRow={selectRow}
+            handleCellMouseDown={handleCellMouseDown}
+            handleDragEnter={handleDragEnter}
+            selectedPosition={selectedPosition}
+            draggedOverRowIdx={draggedOverRowIdx}
+            draggedOverColumnIdx={draggedOverColumnIdx}
+            isFilling={isFilling}
+            bottomRowIdx={bottomRowIdx}
+            selectedCellsInfo={selectedCellsInfo}
           />
         );
       })}

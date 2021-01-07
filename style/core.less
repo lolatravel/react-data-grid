@@ -1,11 +1,11 @@
 .lightTheme() {
   @bg: #fff;
   @selectedRow: #dbecfa;
-  --color: #000;
-  --border-color: #ddd;
+  --color: #48494a;
+  --border-color: #edeef0;
   --summary-border-color: #aaa;
   --background-color: @bg;
-  --header-background-color: darken(@bg, 2.5%);
+  --header-background-color: #ffffff;
   --row-hover-background-color: darken(@bg, 4%);
   --row-selected-background-color: @selectedRow;
   --row-selected-hover-background-color: darken(@selectedRow, 4%);
@@ -36,7 +36,7 @@
 
 .rdg {
   .lightTheme();
-  --selection-color: #66afe9;
+  --selection-color: #48494a;
   --font-size: 14px;
 
   // https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Positioning/Understanding_z_index/The_stacking_context
@@ -53,6 +53,7 @@
   background-color: var(--background-color);
   color: var(--color);
   font-size: var(--font-size);
+  border-radius: 9px;
 
   *,
   *::before,
