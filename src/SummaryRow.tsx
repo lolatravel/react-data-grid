@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import React, { memo } from 'react';
 import SummaryCell from './SummaryCell';
 import type { RowRendererProps } from './types';
 

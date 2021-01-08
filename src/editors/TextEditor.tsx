@@ -1,3 +1,4 @@
+import React from 'react';
 import type { EditorProps } from '../types';
 
 function autoFocusAndSelect(input: HTMLInputElement | null) {

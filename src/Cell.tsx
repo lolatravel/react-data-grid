@@ -1,4 +1,4 @@
-import { forwardRef, memo, useRef } from 'react';
+import React, { forwardRef, memo, useRef } from 'react';
 import clsx from 'clsx';
 
 import type { CellRendererProps } from './types';
@@ -154,6 +154,18 @@ function Cell<R, SR>({
       return false;
   }
 
+  function checkForLeftActiveBorder(): boolean {
+      if (isFilling && draggedOverColumnIdx && draggedOverColumnIdx[0] === column.idx && isDraggedOver && !checkIsDraggedOver()) {
+          return true;
+      }
+
+      if (isCopied) {
+          return true;
+      }
+
+      return false;
+  }
+
   return (
     <div
       role="gridcell"
@@ -180,7 +192,7 @@ function Cell<R, SR>({
               'rdg-cell-fake-background-active-top': checkForTopActiveBorder(),
               'rdg-cell-fake-background-active-bottom': checkForBottomActiveBorder(),
               'rdg-cell-fake-background-active-right': checkForRightActiveBorder(),
-              'rdg-cell-fake-background-active-left': (isFilling && draggedOverColumnIdx && draggedOverColumnIdx[0] === column.idx && isDraggedOver && !checkIsDraggedOver()) || isCopied
+              'rdg-cell-fake-background-active-left': checkForLeftActiveBorder()
           })} />
           <column.formatter
             column={column}
