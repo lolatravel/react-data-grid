@@ -19,6 +19,7 @@
       "require": "./lib/bundle.cjs",
       "default": "./lib/bundle.js"
     },
+    "./jsx-runtime": "./jsx-runtime.js",
     "./dist/": "./dist/"
   },
   "browser": "./lib/bundle.js",
