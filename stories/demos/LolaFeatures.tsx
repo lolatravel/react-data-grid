@@ -1,5 +1,5 @@
 import faker from 'faker';
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import DataGrid, { TextEditor } from '../../src';
 import type { Column, DataGridHandle, FillEvent, PasteEvent } from '../../src';
 

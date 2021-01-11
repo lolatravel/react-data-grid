@@ -491,9 +491,10 @@ function DataGrid<R, SR>({
 
   function handleCopy() {
     const { idx, rowIdx } = selectedPosition;
-    const overRowIdx = latestDraggedOverRowIdx.current || -1;
+    const overRowIdx = latestDraggedOverRowIdx.current || rowIdx;
     const startRowIndex = rowIdx < overRowIdx ? rowIdx : overRowIdx;
     const endRowIndex = rowIdx < overRowIdx ? overRowIdx + 1 : rowIdx + 1;
+    console.log(startRowIndex, endRowIndex);
     const targetRows = overRowIdx ? rawRows.slice(startRowIndex, endRowIndex) : rawRows.slice(rowIdx, rowIdx + 1);
     setCopiedCells({ rows: targetRows, columnKey: columns[idx].key });
   }
@@ -884,6 +885,34 @@ function DataGrid<R, SR>({
     };
   }
 
+  function getCopiedCellIdx(row: R): number | undefined {
+      if (copiedCells === null) return undefined;
+
+      if (typeof rowKeyGetter !== 'function') return undefined;
+
+      const key = rowKeyGetter(row);
+
+      if (copiedCells.rows.some(r => rowKeyGetter(r) === key)) {
+          return columns.findIndex(c => c.key === copiedCells.columnKey);
+      }
+
+      return undefined;
+  }
+
+  function hasFirstCopiedCell(row: R): boolean {
+      if (copiedCells === null) return false;
+      if (typeof rowKeyGetter !== 'function') return false;
+      const key = rowKeyGetter(row);
+      return rowKeyGetter(copiedCells.rows[0]) === key;
+  }
+
+  function hasLastCopiedCell(row: R): boolean {
+      if (copiedCells === null) return false;
+      if (typeof rowKeyGetter !== 'function') return false;
+      const key = rowKeyGetter(row);
+      return rowKeyGetter(copiedCells.rows[copiedCells.rows.length - 1]) === key;
+  }
+
   function getViewportRows() {
     const rowElements = [];
     let startRowIndex = 0;
@@ -923,15 +952,9 @@ function DataGrid<R, SR>({
       startRowIndex++;
       let key: React.Key = hasGroups ? startRowIndex : rowIdx;
       let isRowSelected = false;
-      let firstCopiedCell = null;
-      let lastCopiedCell = null;
       if (typeof rowKeyGetter === 'function') {
         key = rowKeyGetter(row);
         isRowSelected = selectedRows?.has(key) ?? false;
-        if (copiedCells !== null) {
-            firstCopiedCell = rowKeyGetter(copiedCells.rows[0]);
-            lastCopiedCell = rowKeyGetter(copiedCells.rows[copiedCells.rows.length - 1]);
-        }
       }
 
       rowElements.push(
@@ -946,9 +969,9 @@ function DataGrid<R, SR>({
           onRowClick={onRowClick}
           rowClass={rowClass}
           top={top}
-          copiedCellIdx={copiedCells !== null && typeof rowKeyGetter === 'function' && copiedCells.rows.some(r => rowKeyGetter(r) === key) ? columns.findIndex(c => c.key === copiedCells.columnKey) : undefined}
-          hasFirstCopiedCell={copiedCells !== null && firstCopiedCell === key}
-          hasLastCopiedCell={copiedCells !== null && lastCopiedCell === key}
+          copiedCellIdx={copiedCells !== null ? getCopiedCellIdx(row) : undefined}
+          hasFirstCopiedCell={copiedCells !== null && hasFirstCopiedCell(row)}
+          hasLastCopiedCell={copiedCells !== null && hasLastCopiedCell(row)}
           getDraggedOverCellIdx={getDraggedOverCellIdx}
           setDraggedOverRowIdx={isDragging ? setDraggedOverRowIdx : undefined}
           setDraggedOverColumnIdx={isDragging ? setDraggedOverColumnIdx : undefined}
