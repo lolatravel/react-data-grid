@@ -84,6 +84,7 @@ export interface CellType {
 export interface FormatterProps<TRow = any> {
   rowIdx: number;
   cell: string | CellType;
+  row: TRow;
   isCellSelected: boolean;
   isRowSelected: boolean;
   onRowSelectionChange: (checked: boolean, isShiftClick: boolean) => void;
