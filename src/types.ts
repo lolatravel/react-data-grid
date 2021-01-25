@@ -19,7 +19,7 @@ export interface Column<TRow, TSummaryRow = unknown> {
   headerCellClass?: string;
   summaryCellClass?: string | ((row: TSummaryRow) => string);
   /** Formatter to be used to render the cell content */
-  formatter?: React.ComponentType<FormatterProps<TRow, TSummaryRow>>;
+  formatter?: React.ComponentType<FormatterProps<TRow>>;
   /** Formatter to be used to render the summary cell content */
   summaryFormatter?: React.ComponentType<SummaryFormatterProps<TSummaryRow, TRow>>;
   /** Formatter to be used to render the group cell content */
@@ -55,6 +55,7 @@ export interface Column<TRow, TSummaryRow = unknown> {
   /** Component to be used to filter the data of the column */
   filterRenderer?: React.ComponentType<FilterRendererProps<TRow, any, TSummaryRow>>;
   alignment?: string;
+  frozenAlignment?: string;
 }
 
 export interface CalculatedColumn<TRow, TSummaryRow = unknown> extends Column<TRow, TSummaryRow> {
@@ -65,7 +66,7 @@ export interface CalculatedColumn<TRow, TSummaryRow = unknown> extends Column<TR
   sortable: boolean;
   isLastFrozenColumn?: boolean;
   rowGroup?: boolean;
-  formatter: React.ComponentType<FormatterProps<TRow, TSummaryRow>>;
+  formatter: React.ComponentType<FormatterProps<TRow>>;
   alignment?: string;
 }
 
@@ -74,10 +75,15 @@ export interface Position {
   rowIdx: number;
 }
 
-export interface FormatterProps<TRow = any, TSummaryRow = any> {
+export interface CellType {
+    value: string;
+    disabled?: boolean;
+    error?: boolean;
+};
+
+export interface FormatterProps<TRow = any> {
   rowIdx: number;
-  column: CalculatedColumn<TRow, TSummaryRow>;
-  row: TRow;
+  cell: string | CellType;
   isCellSelected: boolean;
   isRowSelected: boolean;
   onRowSelectionChange: (checked: boolean, isShiftClick: boolean) => void;
@@ -144,6 +150,7 @@ export interface CellRendererProps<TRow, TSummaryRow = unknown> extends Omit<Rea
   rowIdx: number;
   column: CalculatedColumn<TRow, TSummaryRow>;
   row: TRow;
+  cell: string | CellType;
   isCopied: boolean;
   isDraggedOver: boolean;
   isCellSelected: boolean;
@@ -163,6 +170,9 @@ export interface CellRendererProps<TRow, TSummaryRow = unknown> extends Omit<Rea
   isFilling: boolean;
   bottomRowIdx: number;
   selectedCellsInfo: number | undefined;
+  gridWidth: number;
+  scrollLeft: number;
+  scrolledToEnd: boolean;
 }
 
 export interface RowRendererProps<TRow, TSummaryRow = unknown> extends Omit<React.HTMLAttributes<HTMLDivElement>, 'style' | 'children'> {
@@ -193,6 +203,9 @@ export interface RowRendererProps<TRow, TSummaryRow = unknown> extends Omit<Reac
   dragHandleProps?: Pick<React.HTMLAttributes<HTMLDivElement>, 'onMouseDown' | 'onDoubleClick'>;
   draggedOverRowIdx?: number;
   draggedOverColumnIdx?: number[];
+  gridWidth: number;
+  scrollLeft: number;
+  scrolledToEnd: boolean;
 }
 
 export interface FilterRendererProps<TRow, TFilterValue = unknown, TSummaryRow = unknown> {

@@ -2,7 +2,7 @@ import React, { forwardRef, memo, useRef } from 'react';
 import clsx from 'clsx';
 
 import type { CellRendererProps } from './types';
-import { wrapEvent } from './utils';
+import { wrapEvent, checkIfCellDisabled } from './utils';
 import { useCombinedRefs } from './hooks';
 
 function Cell<R, SR>({
@@ -15,9 +15,7 @@ function Cell<R, SR>({
   row,
   rowIdx,
   dragHandleProps,
-  onRowClick,
   onDoubleClick,
-  onContextMenu,
   onRowChange,
   selectCell,
   handleCellMouseDown,
@@ -31,26 +29,41 @@ function Cell<R, SR>({
   isFilling,
   bottomRowIdx,
   selectedCellsInfo,
-  ...props
+  gridWidth,
+  scrolledToEnd,
+  cell,
+  scrollLeft
 }: CellRendererProps<R, SR>, ref: React.Ref<HTMLDivElement>) {
   const cellRef = useRef<HTMLDivElement>(null);
+  const disabled = checkIfCellDisabled(cell);
+  const error = typeof cell === 'object' && cell.error;
+  const frozen = column.frozen;
+  const frozenRightAlign = column.frozenAlignment && column.frozenAlignment === 'right';
 
   const { cellClass } = column;
   className = clsx(
     'rdg-cell',
     {
       'rdg-cell-frozen': column.frozen,
-      'rdg-cell-frozen-last': column.isLastFrozenColumn,
+      'rdg-cell-frozen-align-right': frozenRightAlign,
+      'rdg-cell-frozen-align-right-no-shadow': scrolledToEnd && frozenRightAlign,
+      'rdg-cell-frozen-last': column.isLastFrozenColumn && scrollLeft > 0,
       'rdg-cell-selected': isCellSelected,
-      'rdg-cell-copied': isCopied,
+      'rdg-cell-copied': isCopied && !disabled,
       'rdg-cell-dragged-over': checkIsDraggedOver(),
-      'rdg-cell-align-right': column.alignment === 'right'
+      'rdg-cell-align-right': column.alignment === 'right',
+      'rdg-cell-disabled': disabled,
+      'rdg-cell-error': error
     },
     typeof cellClass === 'function' ? cellClass(row) : cellClass,
     className
   );
 
   function checkIsDraggedOver() {
+      if (disabled || frozen) {
+          return false;
+      }
+
       if (selectedCellsInfo === selectedPosition.rowIdx && isFilling) {
           return false;
       }
@@ -72,14 +85,10 @@ function Cell<R, SR>({
     }
   }
 
-  function handleClick(event: React.MouseEvent<HTMLDivElement>) {
-    event.preventDefault();
-    selectCellWrapper(column.editorOptions?.editOnClick);
-    onRowClick?.(rowIdx, row, column);
-  }
-
   function handleMouseDown(event: React.MouseEvent<HTMLDivElement>) {
       event.preventDefault();
+      if (event.buttons === 2) return;
+      if (disabled || frozen || frozenRightAlign) return;
       selectCellWrapper(false);
       handleCellMouseDown(event);
   }
@@ -90,12 +99,10 @@ function Cell<R, SR>({
       }
   }
 
-  function handleContextMenu() {
-    selectCellWrapper();
-  }
-
   function handleDoubleClick() {
-    selectCellWrapper(true);
+      if (!disabled && !frozen && !frozenRightAlign) {
+          selectCellWrapper(true);
+      }
   }
 
   function handleRowChange(newRow: R) {
@@ -173,16 +180,13 @@ function Cell<R, SR>({
       aria-selected={isCellSelected}
       ref={useCombinedRefs(cellRef, ref)}
       className={className}
-      style={{
+      style={column.frozenAlignment === 'right' ? { width: column.width, left: gridWidth - column.width } : {
         width: column.width,
         left: column.left
       }}
-      onClick={handleClick}
       onMouseDown={handleMouseDown}
       onMouseEnter={handleMouseEnter}
       onDoubleClick={wrapEvent(handleDoubleClick, onDoubleClick)}
-      onContextMenu={wrapEvent(handleContextMenu, onContextMenu)}
-      {...props}
     >
       {!column.rowGroup && (
         <>
@@ -195,15 +199,14 @@ function Cell<R, SR>({
               'rdg-cell-fake-background-active-left': checkForLeftActiveBorder()
           })} />
           <column.formatter
-            column={column}
             rowIdx={rowIdx}
-            row={row}
+            cell={cell}
             isCellSelected={isCellSelected}
             isRowSelected={isRowSelected}
             onRowSelectionChange={onRowSelectionChange}
             onRowChange={handleRowChange}
           />
-          {dragHandleProps && (
+          {dragHandleProps && !disabled && !frozenRightAlign && !frozen && (
             <div className="rdg-cell-drag-handle" {...dragHandleProps} />
           )}
         </>

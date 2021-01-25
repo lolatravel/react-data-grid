@@ -1,5 +1,5 @@
 import type { CellNavigationMode } from '../enums';
-import type { CalculatedColumn, Position, GroupRow } from '../types';
+import type { CalculatedColumn, Position, GroupRow, CellType } from '../types';
 
 interface IsSelectedCellEditableOpts<R, SR> {
   selectedPosition: Position;
@@ -88,4 +88,14 @@ export function canExitGrid<R, SR>({ cellNavigationMode, columns, rowsCount, sel
   }
 
   return false;
+}
+
+export function checkIfCellDisabled(cell: undefined | string | CellType): boolean {
+    if (!cell) return false;
+
+    if (typeof cell === 'string' || !cell.disabled) {
+        return false;
+    }
+
+    return true;
 }

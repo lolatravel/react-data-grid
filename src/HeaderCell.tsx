@@ -28,6 +28,9 @@ export interface HeaderCellProps<R, SR> extends SharedHeaderRowProps<R, SR> {
   column: CalculatedColumn<R, SR>;
   onResize: (column: CalculatedColumn<R, SR>, width: number) => void;
   onAllRowsSelectionChange: (checked: boolean) => void;
+  gridWidth: number;
+  scrollLeft: number;
+  scrolledToEnd: boolean;
 }
 
 export default function HeaderCell<R, SR>({
@@ -37,7 +40,10 @@ export default function HeaderCell<R, SR>({
   onAllRowsSelectionChange,
   sortColumn,
   sortDirection,
-  onSort
+  gridWidth,
+  scrollLeft,
+  onSort,
+  scrolledToEnd
 }: HeaderCellProps<R, SR>) {
   function onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
     if (event.pointerType === 'mouse' && event.buttons !== 1) {
@@ -108,10 +114,12 @@ export default function HeaderCell<R, SR>({
   const className = clsx('rdg-cell', column.headerCellClass, {
     'rdg-cell-resizable': column.resizable,
     'rdg-cell-frozen': column.frozen,
-    'rdg-cell-frozen-last': column.isLastFrozenColumn,
+    'rdg-cell-frozen-last': column.isLastFrozenColumn && scrollLeft > 0,
+    'rdg-cell-frozen-align-right': column.frozenAlignment === 'right',
+    'rdg-cell-frozen-align-right-no-shadow': scrolledToEnd && column.frozenAlignment === 'right',
     'rdg-cell-align-right': column.alignment === 'right'
   });
-  const style: React.CSSProperties = {
+  const style: React.CSSProperties = column.frozenAlignment === 'right' ? { width: column.width, left: gridWidth - column.width } : {
     width: column.width,
     left: column.left
   };

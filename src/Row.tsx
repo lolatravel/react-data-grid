@@ -3,7 +3,8 @@ import clsx from 'clsx';
 
 import Cell from './Cell';
 import EditCell from './EditCell';
-import type { RowRendererProps, SelectedCellProps } from './types';
+import { checkIfCellDisabled } from './utils';
+import type { RowRendererProps, SelectedCellProps, CellType } from './types';
 
 function Row<R, SR = unknown>({
   cellRenderer: CellRenderer = Cell,
@@ -35,6 +36,9 @@ function Row<R, SR = unknown>({
   dragHandleProps,
   draggedOverRowIdx,
   draggedOverColumnIdx,
+  gridWidth,
+  scrollLeft,
+  scrolledToEnd,
   'aria-rowindex': ariaRowIndex,
   'aria-selected': ariaSelected,
   ...props
@@ -91,7 +95,10 @@ function Row<R, SR = unknown>({
       {viewportColumns.map(column => {
         const isCellSelected = selectedCellProps?.idx === column.idx;
         const isBottomCell = rowIdx === bottomRowIdx && column.idx === selectedPosition.idx;
-        if (selectedCellProps?.mode === 'EDIT' && isCellSelected) {
+        const cell = row[column.key as keyof R] as unknown as CellType;
+        const cellCanBeEdited = !checkIfCellDisabled(cell);
+
+        if (selectedCellProps?.mode === 'EDIT' && isCellSelected && cellCanBeEdited) {
           return (
             <EditCell<R, SR>
               key={column.key}
@@ -110,6 +117,7 @@ function Row<R, SR = unknown>({
             rowIdx={rowIdx}
             column={column}
             row={row}
+            cell={cell}
             isCopied={copiedCellIdx === column.idx}
             hasFirstCopiedCell={hasFirstCopiedCell}
             hasLastCopiedCell={hasLastCopiedCell}
@@ -131,6 +139,9 @@ function Row<R, SR = unknown>({
             isFilling={isFilling}
             bottomRowIdx={bottomRowIdx}
             selectedCellsInfo={selectedCellsInfo}
+            gridWidth={gridWidth}
+            scrollLeft={scrollLeft}
+            scrolledToEnd={scrolledToEnd}
           />
         );
       })}
