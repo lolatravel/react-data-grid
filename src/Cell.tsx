@@ -201,6 +201,7 @@ function Cell<R, SR>({
           <column.formatter
             rowIdx={rowIdx}
             cell={cell}
+            row={row}
             isCellSelected={isCellSelected}
             isRowSelected={isRowSelected}
             onRowSelectionChange={onRowSelectionChange}
