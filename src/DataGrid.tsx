@@ -22,7 +22,8 @@ import {
   isSelectedCellEditable,
   canExitGrid,
   isCtrlKeyHeldDown,
-  isDefaultCellInput
+  isDefaultCellInput,
+  checkIfCellDisabled
 } from './utils';
 
 import type {
@@ -35,7 +36,8 @@ import type {
   SelectedCellProps,
   EditCellProps,
   FillEvent,
-  PasteEvent
+  PasteEvent,
+  CellType
 } from './types';
 import type { CellNavigationMode, SortDirection } from './enums';
 
@@ -491,36 +493,66 @@ function DataGrid<R, SR>({
 
   function handleCopy() {
     const { idx, rowIdx } = selectedPosition;
-    const overRowIdx = latestDraggedOverRowIdx.current || rowIdx;
-    const startRowIndex = rowIdx < overRowIdx ? rowIdx : overRowIdx;
-    const endRowIndex = rowIdx < overRowIdx ? overRowIdx + 1 : rowIdx + 1;
-    console.log(startRowIndex, endRowIndex);
-    const targetRows = overRowIdx ? rawRows.slice(startRowIndex, endRowIndex) : rawRows.slice(rowIdx, rowIdx + 1);
-    setCopiedCells({ rows: targetRows, columnKey: columns[idx].key });
+    const selectedCell = rawRows[rowIdx][columns[idx].key as keyof R] as unknown as CellType;
+    if (typeof selectedCell === 'string' || !selectedCell.disabled) {
+        const overRowIdx = latestDraggedOverRowIdx.current || rowIdx;
+        const startRowIndex = rowIdx < overRowIdx ? rowIdx : overRowIdx;
+        const endRowIndex = rowIdx < overRowIdx ? overRowIdx + 1 : rowIdx + 1;
+        const targetRows = overRowIdx ? rawRows.slice(startRowIndex, endRowIndex) : rawRows.slice(rowIdx, rowIdx + 1);
+        setCopiedCells({ rows: targetRows, columnKey: columns[idx].key });
+    }
   }
 
   function handlePaste() {
     const { idx, rowIdx } = selectedPosition;
     const targetRow = rawRows[getRawRowIdx(rowIdx)];
+    const selectedCell = rawRows[rowIdx][columns[idx].key as keyof R] as unknown as CellType;
+    const cellCanBePasted = !checkIfCellDisabled(selectedCell);
     if (
       !onPaste
       || !onRowsChange
       || copiedCells === null
       || !isCellEditable(selectedPosition)
+      || !cellCanBePasted
     ) {
       return;
     }
 
     const { rows, columnKey } = copiedCells;
+    let updatedTargetRows;
     const startRowIndex = rowIdx;
-    const endRowIndex = rowIdx + rows.length;
+    let endRowIndex = rowIdx;
 
-    const updatedTargetRows = onPaste({
-      sourceRows: rows,
-      sourceColumnKey: columnKey,
-      targetRows: rows.length === 1 ? [targetRow] : rawRows.slice(startRowIndex, endRowIndex),
-      targetColumnKey: columns[idx].key
-    });
+    if (rows.length > 1) {
+        const filteredRows = rows.filter(r => {
+            const cell = r[columnKey as keyof R] as unknown as CellType;
+            return !checkIfCellDisabled(cell);
+        });
+        let checkIndex = 0;
+
+        while (checkIndex < filteredRows.length && endRowIndex < rawRows.length) {
+            const cell = rawRows[endRowIndex][columnKey as keyof R] as unknown as CellType;
+            if (!checkIfCellDisabled(cell)) {
+                checkIndex += 1;
+            }
+            endRowIndex += 1;
+        }
+
+        updatedTargetRows = onPaste({
+          sourceRows: filteredRows,
+          sourceColumnKey: columnKey,
+          targetRows: rows.length === 1 ? [targetRow] : rawRows.slice(startRowIndex, endRowIndex),
+          targetColumnKey: columns[idx].key
+        });
+    } else {
+        endRowIndex += 1;
+        updatedTargetRows = onPaste({
+          sourceRows: rows,
+          sourceColumnKey: columnKey,
+          targetRows: [targetRow],
+          targetColumnKey: columns[idx].key
+        });
+    }
 
     const updatedRows = [...rawRows];
     for (let i = startRowIndex; i < endRowIndex; i++) {
@@ -769,13 +801,15 @@ function DataGrid<R, SR>({
       }
     }
 
+    const prevCol = columns[idx - 1];
+
     switch (key) {
       case 'ArrowUp':
         return { idx, rowIdx: rowIdx - 1 };
       case 'ArrowDown':
         return { idx, rowIdx: rowIdx + 1 };
       case 'ArrowLeft':
-        return { idx: idx - 1, rowIdx };
+        return prevCol && prevCol.frozen ? { idx, rowIdx } : { idx: idx - 1, rowIdx };
       case 'ArrowRight':
         return { idx: idx + 1, rowIdx };
       case 'Tab':
@@ -965,6 +999,7 @@ function DataGrid<R, SR>({
           rowIdx={rowIdx}
           row={row}
           viewportColumns={viewportColumns}
+          gridWidth={gridWidth}
           isRowSelected={isRowSelected}
           onRowClick={onRowClick}
           rowClass={rowClass}
@@ -991,6 +1026,8 @@ function DataGrid<R, SR>({
           selectedCellsInfo={selectedCellsInfo}
           draggedOverRowIdx={draggedOverRowIdx}
           draggedOverColumnIdx={draggedOverColumnIdx}
+          scrollLeft={scrollLeft}
+          scrolledToEnd={gridRef.current ? gridRef.current.clientWidth + scrollLeft >= totalColumnWidth : false}
         />
       );
     }
@@ -1039,6 +1076,9 @@ function DataGrid<R, SR>({
         sortColumn={sortColumn}
         sortDirection={sortDirection}
         onSort={onSort}
+        gridWidth={gridWidth}
+        scrollLeft={scrollLeft}
+        scrolledToEnd={gridRef.current ? gridRef.current.clientWidth + scrollLeft >= totalColumnWidth : false}
       />
       {enableFilterRow && (
         <FilterRow<R, SR>

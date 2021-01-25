@@ -21,7 +21,7 @@ export function useViewportColumns<R, SR>({
   defaultColumnOptions,
   rawGroupBy
 }: ViewportColumnsArgs<R, SR>) {
-  const minColumnWidth = defaultColumnOptions?.minWidth ?? 80;
+  const minColumnWidth = defaultColumnOptions?.minWidth ?? 54;
   const defaultFormatter = defaultColumnOptions?.formatter ?? ValueFormatter;
   const defaultSortable = defaultColumnOptions?.sortable ?? false;
   const defaultResizable = defaultColumnOptions?.resizable ?? false;
@@ -52,7 +52,7 @@ export function useViewportColumns<R, SR>({
         column.rowGroup = true;
       }
 
-      if (column.frozen) {
+      if (column.frozen && !column.frozenAlignment) {
         lastFrozenColumnIndex++;
       }
 
@@ -111,7 +111,7 @@ export function useViewportColumns<R, SR>({
       }
 
       totalWidth += width;
-      left += width;
+      left = column.frozenAlignment === 'right' ? left : left + width;
       return newColumn;
     });
 
