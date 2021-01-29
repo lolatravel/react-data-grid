@@ -7,6 +7,7 @@ import React, {
   useCallback
 } from 'react';
 import clsx from 'clsx';
+import isEqual from 'lodash/isEqual';
 
 import { useGridDimensions, useViewportColumns, useViewportRows, useLatestFunc } from './hooks';
 import HeaderRow from './HeaderRow';
@@ -90,7 +91,7 @@ export interface DataGridProps<R, SR = unknown> extends SharedDivProps {
   summaryRows?: readonly SR[];
   /** The getter should return a unique key for each row */
   rowKeyGetter?: (row: R) => React.Key;
-  onRowsChange?: (rows: R[]) => void;
+  onRowsChange?: (rows: R[], position?: R, key?: string) => void;
 
   /**
    * Dimensions props
@@ -482,13 +483,13 @@ function DataGrid<R, SR>({
     if (
       columns[selectedPosition.idx]?.editor === undefined
       || selectedPosition.mode === 'SELECT'
-      || selectedPosition.row === selectedPosition.originalRow) {
+      || isEqual(selectedPosition.row, selectedPosition.originalRow)) {
       return;
     }
 
     const updatedRows = [...rawRows];
     updatedRows[getRawRowIdx(selectedPosition.rowIdx)] = selectedPosition.row;
-    onRowsChange?.(updatedRows);
+    onRowsChange?.(updatedRows, selectedPosition.row, columns[selectedPosition.idx].key);
   }
 
   function handleCopy() {
