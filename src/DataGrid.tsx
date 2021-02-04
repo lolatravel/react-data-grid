@@ -157,6 +157,7 @@ export interface DataGridProps<R, SR = unknown> extends SharedDivProps {
   /** The node where the editor portal should mount. */
   editorPortalTarget?: Element;
   rowClass?: (row: R) => string | undefined;
+  enableOptionsCol?: boolean;
 }
 
 /**
@@ -208,6 +209,7 @@ function DataGrid<R, SR>({
   className,
   style,
   rowClass,
+  enableOptionsCol,
   // ARIA
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledBy,
@@ -1047,6 +1049,8 @@ function DataGrid<R, SR>({
     closeEditor();
   }
 
+  const scrolledToEnd = gridRef.current ? gridRef.current.clientWidth + scrollLeft >= totalColumnWidth : false;
+
   return (
     <div
       role={hasGroups ? 'treegrid' : 'grid'}
@@ -1079,7 +1083,7 @@ function DataGrid<R, SR>({
         onSort={onSort}
         gridWidth={gridWidth}
         scrollLeft={scrollLeft}
-        scrolledToEnd={gridRef.current ? gridRef.current.clientWidth + scrollLeft >= totalColumnWidth : false}
+        scrolledToEnd={scrolledToEnd}
       />
       {enableFilterRow && (
         <FilterRow<R, SR>
@@ -1096,7 +1100,14 @@ function DataGrid<R, SR>({
             className="rdg-focus-sink"
             onKeyDown={handleKeyDown}
           />
-          <div style={{ height: Math.max(rows.length * rowHeight, clientHeight) }} />
+          <div style={{ height: Math.max(rows.length * rowHeight, clientHeight), position: 'sticky', left: 0 }}>
+          {enableOptionsCol && (
+              <div
+                className="rdg-mock-options"
+                style={{ boxShadow: scrolledToEnd ? 'none' : '-1px 0px 6px 2px rgba(0, 0, 0, 0.12)' }}
+              />
+          )}
+          </div>
           {getViewportRows()}
           {summaryRows?.map((row, rowIdx) => (
             <SummaryRow<R, SR>

@@ -496,175 +496,175 @@ function createRows(): Row[] {
             value: "$3000",
             disabled: false
         }
-    },
-    {
-        name: "Lincoln test 2 (socks)",
-        id: "68025365469089224",
-        '2021-01-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2021-02-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2021-03-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2021-04-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2021-05-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2021-06-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2021-07-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2021-08-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2021-09-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2021-10-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2021-11-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2021-12-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2022-01-01': {
-            value: "$3000",
-            disabled: false
-        }
-    },
-    {
-        name: "Jake's Budget",
-        id: "67783645384952106",
-        '2021-01-01': {
-            value: "$5",
-            disabled: false
-        },
-        '2021-02-01': {
-            value: "$5",
-            disabled: false
-        },
-        '2021-03-01': {
-            value: "$5",
-            disabled: false
-        },
-        '2021-04-01': {
-            value: "$5",
-            disabled: false
-        },
-        '2021-05-01': {
-            value: "$5",
-            disabled: false
-        },
-        '2021-06-01': {
-            value: "$5",
-            disabled: false
-        },
-        '2021-07-01': {
-            value: "$5",
-            disabled: false
-        },
-        '2021-08-01': {
-            value: "$5",
-            disabled: false
-        },
-        '2021-09-01': {
-            value: "$5",
-            disabled: false
-        },
-        '2021-10-01': {
-            value: "$5",
-            disabled: false
-        },
-        '2021-11-01': {
-            value: "$5",
-            disabled: false
-        },
-        '2021-12-01': {
-            value: "$5",
-            disabled: false
-        },
-        '2022-01-01': {
-            value: "$5",
-            disabled: false
-        }
-    },
-    {
-        name: "Amanda's Budget",
-        id: "68498530053932260",
-        '2021-01-01': {
-            value: "$2000",
-            disabled: false
-        },
-        '2021-02-01': {
-            value: "$2000",
-            disabled: false
-        },
-        '2021-03-01': {
-            value: "$2000",
-            disabled: false
-        },
-        '2021-04-01': {
-            value: "$2000",
-            disabled: false
-        },
-        '2021-05-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-06-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-07-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-08-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-09-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-10-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-11-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-12-01': {
-            value: "--",
-            disabled: true
-        },
-        '2022-01-01': {
-            value: "--",
-            disabled: true
-        }
     }
+    // {
+    //     name: "Lincoln test 2 (socks)",
+    //     id: "68025365469089224",
+    //     '2021-01-01': {
+    //         value: "$3000",
+    //         disabled: false
+    //     },
+    //     '2021-02-01': {
+    //         value: "$3000",
+    //         disabled: false
+    //     },
+    //     '2021-03-01': {
+    //         value: "$3000",
+    //         disabled: false
+    //     },
+    //     '2021-04-01': {
+    //         value: "$3000",
+    //         disabled: false
+    //     },
+    //     '2021-05-01': {
+    //         value: "$3000",
+    //         disabled: false
+    //     },
+    //     '2021-06-01': {
+    //         value: "$3000",
+    //         disabled: false
+    //     },
+    //     '2021-07-01': {
+    //         value: "$3000",
+    //         disabled: false
+    //     },
+    //     '2021-08-01': {
+    //         value: "$3000",
+    //         disabled: false
+    //     },
+    //     '2021-09-01': {
+    //         value: "$3000",
+    //         disabled: false
+    //     },
+    //     '2021-10-01': {
+    //         value: "$3000",
+    //         disabled: false
+    //     },
+    //     '2021-11-01': {
+    //         value: "$3000",
+    //         disabled: false
+    //     },
+    //     '2021-12-01': {
+    //         value: "$3000",
+    //         disabled: false
+    //     },
+    //     '2022-01-01': {
+    //         value: "$3000",
+    //         disabled: false
+    //     }
+    // },
+    // {
+    //     name: "Jake's Budget",
+    //     id: "67783645384952106",
+    //     '2021-01-01': {
+    //         value: "$5",
+    //         disabled: false
+    //     },
+    //     '2021-02-01': {
+    //         value: "$5",
+    //         disabled: false
+    //     },
+    //     '2021-03-01': {
+    //         value: "$5",
+    //         disabled: false
+    //     },
+    //     '2021-04-01': {
+    //         value: "$5",
+    //         disabled: false
+    //     },
+    //     '2021-05-01': {
+    //         value: "$5",
+    //         disabled: false
+    //     },
+    //     '2021-06-01': {
+    //         value: "$5",
+    //         disabled: false
+    //     },
+    //     '2021-07-01': {
+    //         value: "$5",
+    //         disabled: false
+    //     },
+    //     '2021-08-01': {
+    //         value: "$5",
+    //         disabled: false
+    //     },
+    //     '2021-09-01': {
+    //         value: "$5",
+    //         disabled: false
+    //     },
+    //     '2021-10-01': {
+    //         value: "$5",
+    //         disabled: false
+    //     },
+    //     '2021-11-01': {
+    //         value: "$5",
+    //         disabled: false
+    //     },
+    //     '2021-12-01': {
+    //         value: "$5",
+    //         disabled: false
+    //     },
+    //     '2022-01-01': {
+    //         value: "$5",
+    //         disabled: false
+    //     }
+    // },
+    // {
+    //     name: "Amanda's Budget",
+    //     id: "68498530053932260",
+    //     '2021-01-01': {
+    //         value: "$2000",
+    //         disabled: false
+    //     },
+    //     '2021-02-01': {
+    //         value: "$2000",
+    //         disabled: false
+    //     },
+    //     '2021-03-01': {
+    //         value: "$2000",
+    //         disabled: false
+    //     },
+    //     '2021-04-01': {
+    //         value: "$2000",
+    //         disabled: false
+    //     },
+    //     '2021-05-01': {
+    //         value: "--",
+    //         disabled: true
+    //     },
+    //     '2021-06-01': {
+    //         value: "--",
+    //         disabled: true
+    //     },
+    //     '2021-07-01': {
+    //         value: "--",
+    //         disabled: true
+    //     },
+    //     '2021-08-01': {
+    //         value: "--",
+    //         disabled: true
+    //     },
+    //     '2021-09-01': {
+    //         value: "--",
+    //         disabled: true
+    //     },
+    //     '2021-10-01': {
+    //         value: "--",
+    //         disabled: true
+    //     },
+    //     '2021-11-01': {
+    //         value: "--",
+    //         disabled: true
+    //     },
+    //     '2021-12-01': {
+    //         value: "--",
+    //         disabled: true
+    //     },
+    //     '2022-01-01': {
+    //         value: "--",
+    //         disabled: true
+    //     }
+    // }
   ];
 }
 
@@ -731,6 +731,7 @@ export function LolaFeatures() {
         headerRowHeight={48}
         selectedRows={selectedRows}
         onSelectedRowsChange={setSelectedRows}
+        enableOptionsCol
       />
     </div>
   );
