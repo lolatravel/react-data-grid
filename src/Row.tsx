@@ -44,7 +44,6 @@ function Row<R, SR = unknown>({
   ...props
 }: RowRendererProps<R, SR>, ref: React.Ref<HTMLDivElement>) {
   function handleDragEnter(colIdx: number) {
-      console.log(selectedCellsInfo)
       if (isFilling && typeof selectedCellsInfo === 'number') {
           if (selectedCellsInfo === selectedPosition.rowIdx) {
               if (colIdx === selectedPosition.idx) {
