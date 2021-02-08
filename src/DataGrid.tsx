@@ -1104,7 +1104,11 @@ function DataGrid<R, SR>({
           {enableOptionsCol && (
               <div
                 className="rdg-mock-options"
-                style={{ boxShadow: scrolledToEnd ? 'none' : '-1px 0px 6px 2px rgba(0, 0, 0, 0.12)' }}
+                style={{
+                    boxShadow: scrolledToEnd ? 'none' : '-1px 0px 6px 2px rgba(0, 0, 0, 0.12)',
+                    width: scrolledToEnd ? 55 : 54,
+                    borderLeft: scrolledToEnd ? '1px solid #edeef0' : 'none'
+                }}
               />
           )}
           </div>
