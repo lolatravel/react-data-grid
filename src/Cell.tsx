@@ -60,7 +60,7 @@ function Cell<R, SR>({
   );
 
   function checkIsDraggedOver() {
-      if (disabled || frozen) {
+      if (disabled || frozen || !isDraggedOver) {
           return false;
       }
 
