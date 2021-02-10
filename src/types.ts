@@ -174,6 +174,7 @@ export interface CellRendererProps<TRow, TSummaryRow = unknown> extends Omit<Rea
   gridWidth: number;
   scrollLeft: number;
   scrolledToEnd: boolean;
+  expandRow?: (row: TRow, type: string) => void;
 }
 
 export interface RowRendererProps<TRow, TSummaryRow = unknown> extends Omit<React.HTMLAttributes<HTMLDivElement>, 'style' | 'children'> {
@@ -207,6 +208,7 @@ export interface RowRendererProps<TRow, TSummaryRow = unknown> extends Omit<Reac
   gridWidth: number;
   scrollLeft: number;
   scrolledToEnd: boolean;
+  expandRow?: (row: TRow, type: string) => void;
 }
 
 export interface FilterRendererProps<TRow, TFilterValue = unknown, TSummaryRow = unknown> {

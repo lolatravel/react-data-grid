@@ -1,3 +1,4 @@
+import React from 'react';
 import { useFocusRef } from '../../../../src/hooks';
 import './CellExpanderFormatter.less';
 

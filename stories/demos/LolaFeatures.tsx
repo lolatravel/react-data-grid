@@ -1,7 +1,9 @@
 // import faker from 'faker';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo, useReducer } from 'react';
 import DataGrid, { TextEditor } from '../../src';
 import type { Column, DataGridHandle, FillEvent, PasteEvent } from '../../src';
+import { CellExpanderFormatter } from './components/Formatters';
+import { createRows } from './LolaFeaturesMockData';
 
 import './AllFeatures.less';
 
@@ -20,658 +22,100 @@ export interface Row {
     '2021-10-01': {value: string, disabled?: boolean, error?: boolean},
     '2021-11-01': {value: string, disabled?: boolean, error?: boolean},
     '2021-12-01': {value: string, disabled?: boolean, error?: boolean},
-    '2022-01-01': {value: string, disabled?: boolean, error?: boolean}
+    '2022-01-01': {value: string, disabled?: boolean, error?: boolean},
+    children?: Row[],
+    isExpanded?: boolean
 }
 
 export interface TSummaryRow {}
+
+interface Action {
+  type: 'toggleSubRow' | 'deleteSubRow' | 'updateRows';
+  id?: string;
+  newRows?: Row[]
+}
 
 function rowKeyGetter(row: Row) {
   return row.id;
 }
 
-const columns: readonly Column<Row>[] = [
-    {key: "name", name: "Name", width: 285, frozen: true },
-    {key: "options", name: "", frozenAlignment: "right", width: 54, frozen: true},
-    {key: "2021-01-01", name: "Jan 2021", width: 116, alignment: "right", editor: TextEditor},
-    {key: "2021-02-01", name: "Feb 2021", width: 116, alignment: "right", editor: TextEditor},
-    {key: "2021-03-01", name: "Mar 2021", width: 116, alignment: "right", editor: TextEditor},
-    {key: "2021-04-01", name: "Apr 2021", width: 116, alignment: "right", editor: TextEditor},
-    {key: "2021-05-01", name: "May 2021", width: 116, alignment: "right", editor: TextEditor},
-    {key: "2021-06-01", name: "Jun 2021", width: 116, alignment: "right", editor: TextEditor},
-    {key: "2021-07-01", name: "Jul 2021", width: 116, alignment: "right", editor: TextEditor},
-    {key: "2021-08-01", name: "Aug 2021", width: 116, alignment: "right", editor: TextEditor},
-    {key: "2021-09-01", name: "Sep 2021", width: 116, alignment: "right", editor: TextEditor},
-    {key: "2021-10-01", name: "Oct 2021", width: 116, alignment: "right", editor: TextEditor},
-    {key: "2021-11-01", name: "Nov 2021", width: 116, alignment: "right", editor: TextEditor},
-    {key: "2021-12-01", name: "Dec 2021", width: 116, alignment: "right", editor: TextEditor},
-    {key: "2022-01-01", name: "Jan 2022", width: 116, alignment: "right", editor: TextEditor}
-];
+function toggleSubRow(rows: Row[], id: string): Row[] {
+  const rowIndex = rows.findIndex(r => r.id === id);
+  const row = rows[rowIndex];
+  const { children } = row;
+  if (!children) return rows;
 
-function createRows(): Row[] {
-  return [
-    {
-        name: "Search and Book",
-        id: "20613843566739542",
-        '2021-01-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-02-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-03-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-04-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-05-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-06-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-07-01': {
-            value: "$0",
-            disabled: false
-        },
-        '2021-08-01': {
-            value: "$0",
-            disabled: false
-        },
-        '2021-09-01': {
-            value: "$0",
-            disabled: false
-        },
-        '2021-10-01': {
-            value: "$0",
-            disabled: false
-        },
-        '2021-11-01': {
-            value: "$0",
-            disabled: false
-        },
-        '2021-12-01': {
-            value: "$0",
-            disabled: false
-        },
-        '2022-01-01': {
-            value: "--",
-            disabled: true
-        }
-    },
-    {
-        name: "Sales",
-        id: "25338270430806944",
-        '2021-01-01': {
-            value: "$10,000",
-            disabled: false
-        },
-        '2021-02-01': {
-            value: "$10,000",
-            disabled: false
-        },
-        '2021-03-01': {
-            value: "$10,000",
-            disabled: false
-        },
-        '2021-04-01': {
-            value: "$10,000",
-            disabled: false
-        },
-        '2021-05-01': {
-            value: "$10,000",
-            disabled: false
-        },
-        '2021-06-01': {
-            value: "$10,000",
-            disabled: false
-        },
-        '2021-07-01': {
-            value: "$10,000",
-            disabled: false
-        },
-        '2021-08-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-09-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-10-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-11-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-12-01': {
-            value: "--",
-            disabled: true
-        },
-        '2022-01-01': {
-            value: "--",
-            disabled: true
-        }
-    },
-    {
-        name: "Engineering",
-        id: "26714847592858783",
-        '2021-01-01': {
-            value: "$200",
-            disabled: false
-        },
-        '2021-02-01': {
-            value: "$200",
-            disabled: false
-        },
-        '2021-03-01': {
-            value: "$200",
-            disabled: false
-        },
-        '2021-04-01': {
-            value: "$200",
-            disabled: false
-        },
-        '2021-05-01': {
-            value: "$200",
-            disabled: false
-        },
-        '2021-06-01': {
-            value: "$200",
-            disabled: false
-        },
-        '2021-07-01': {
-            value: "$200",
-            disabled: false
-        },
-        '2021-08-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-09-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-10-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-11-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-12-01': {
-            value: "--",
-            disabled: true
-        },
-        '2022-01-01': {
-            value: "--",
-            disabled: true
-        }
-    },
-    {
-        name: "Engineering",
-        id: "26715779865003183",
-        '2021-01-01': {
-            value: "$200",
-            disabled: false
-        },
-        '2021-02-01': {
-            value: "$200",
-            disabled: false
-        },
-        '2021-03-01': {
-            value: "$200",
-            disabled: false
-        },
-        '2021-04-01': {
-            value: "$200",
-            disabled: false
-        },
-        '2021-05-01': {
-            value: "$200",
-            disabled: false
-        },
-        '2021-06-01': {
-            value: "$200",
-            disabled: false
-        },
-        '2021-07-01': {
-            value: "$200",
-            disabled: false
-        },
-        '2021-08-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-09-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-10-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-11-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-12-01': {
-            value: "--",
-            disabled: true
-        },
-        '2022-01-01': {
-            value: "--",
-            disabled: true
-        }
-    },
-    {
-        name: "Another Budget",
-        id: "87641522069075013",
-        '2021-01-01': {
-            value: "$4000",
-            disabled: false
-        },
-        '2021-02-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-03-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-04-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-05-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-06-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-07-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-08-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-09-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-10-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-11-01': {
-            value: "--",
-            disabled: true
-        },
-        '2021-12-01': {
-            value: "--",
-            disabled: true
-        },
-        '2022-01-01': {
-            value: "--",
-            disabled: true
-        }
-    },
-    {
-        name: "Fruit snacks",
-        id: "52506902055117528",
-        '2021-01-01': {
-            value: "$1000",
-            disabled: true
-        },
-        '2021-02-01': {
-            value: "$1000",
-            disabled: true
-        },
-        '2021-03-01': {
-            value: "$1000",
-            disabled: true
-        },
-        '2021-04-01': {
-            value: "$1000",
-            disabled: true
-        },
-        '2021-05-01': {
-            value: "$1000",
-            disabled: true
-        },
-        '2021-06-01': {
-            value: "$1000",
-            disabled: true
-        },
-        '2021-07-01': {
-            value: "$1000",
-            disabled: true
-        },
-        '2021-08-01': {
-            value: "$1000",
-            disabled: true
-        },
-        '2021-09-01': {
-            value: "$1000",
-            disabled: true
-        },
-        '2021-10-01': {
-            value: "$1000",
-            disabled: true
-        },
-        '2021-11-01': {
-            value: "$1000",
-            disabled: true
-        },
-        '2021-12-01': {
-            value: "--",
-            disabled: true
-        },
-        '2022-01-01': {
-            value: "--",
-            disabled: true
-        }
-    },
-    {
-        name: "Fresh fruits",
-        id: "65227284566531957",
-        '2021-01-01': {
-            value: "$1000",
-            disabled: false
-        },
-        '2021-02-01': {
-            value: "$1000",
-            disabled: false
-        },
-        '2021-03-01': {
-            value: "$1000",
-            disabled: false
-        },
-        '2021-04-01': {
-            value: "$1000",
-            disabled: false
-        },
-        '2021-05-01': {
-            value: "$1000",
-            disabled: false
-        },
-        '2021-06-01': {
-            value: "$1000",
-            disabled: false
-        },
-        '2021-07-01': {
-            value: "$1000",
-            disabled: false
-        },
-        '2021-08-01': {
-            value: "$1000",
-            disabled: false
-        },
-        '2021-09-01': {
-            value: "$1000",
-            disabled: false
-        },
-        '2021-10-01': {
-            value: "$1000",
-            disabled: false
-        },
-        '2021-11-01': {
-            value: "$1000",
-            disabled: false
-        },
-        '2021-12-01': {
-            value: "--",
-            disabled: true
-        },
-        '2022-01-01': {
-            value: "--",
-            disabled: true
-        }
-    },
-    {
-        name: "Lincoln Test 2",
-        id: "68024968889257378",
-        '2021-01-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2021-02-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2021-03-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2021-04-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2021-05-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2021-06-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2021-07-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2021-08-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2021-09-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2021-10-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2021-11-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2021-12-01': {
-            value: "$3000",
-            disabled: false
-        },
-        '2022-01-01': {
-            value: "$3000",
-            disabled: false
-        }
-    }
-    // {
-    //     name: "Lincoln test 2 (socks)",
-    //     id: "68025365469089224",
-    //     '2021-01-01': {
-    //         value: "$3000",
-    //         disabled: false
-    //     },
-    //     '2021-02-01': {
-    //         value: "$3000",
-    //         disabled: false
-    //     },
-    //     '2021-03-01': {
-    //         value: "$3000",
-    //         disabled: false
-    //     },
-    //     '2021-04-01': {
-    //         value: "$3000",
-    //         disabled: false
-    //     },
-    //     '2021-05-01': {
-    //         value: "$3000",
-    //         disabled: false
-    //     },
-    //     '2021-06-01': {
-    //         value: "$3000",
-    //         disabled: false
-    //     },
-    //     '2021-07-01': {
-    //         value: "$3000",
-    //         disabled: false
-    //     },
-    //     '2021-08-01': {
-    //         value: "$3000",
-    //         disabled: false
-    //     },
-    //     '2021-09-01': {
-    //         value: "$3000",
-    //         disabled: false
-    //     },
-    //     '2021-10-01': {
-    //         value: "$3000",
-    //         disabled: false
-    //     },
-    //     '2021-11-01': {
-    //         value: "$3000",
-    //         disabled: false
-    //     },
-    //     '2021-12-01': {
-    //         value: "$3000",
-    //         disabled: false
-    //     },
-    //     '2022-01-01': {
-    //         value: "$3000",
-    //         disabled: false
-    //     }
-    // },
-    // {
-    //     name: "Jake's Budget",
-    //     id: "67783645384952106",
-    //     '2021-01-01': {
-    //         value: "$5",
-    //         disabled: false
-    //     },
-    //     '2021-02-01': {
-    //         value: "$5",
-    //         disabled: false
-    //     },
-    //     '2021-03-01': {
-    //         value: "$5",
-    //         disabled: false
-    //     },
-    //     '2021-04-01': {
-    //         value: "$5",
-    //         disabled: false
-    //     },
-    //     '2021-05-01': {
-    //         value: "$5",
-    //         disabled: false
-    //     },
-    //     '2021-06-01': {
-    //         value: "$5",
-    //         disabled: false
-    //     },
-    //     '2021-07-01': {
-    //         value: "$5",
-    //         disabled: false
-    //     },
-    //     '2021-08-01': {
-    //         value: "$5",
-    //         disabled: false
-    //     },
-    //     '2021-09-01': {
-    //         value: "$5",
-    //         disabled: false
-    //     },
-    //     '2021-10-01': {
-    //         value: "$5",
-    //         disabled: false
-    //     },
-    //     '2021-11-01': {
-    //         value: "$5",
-    //         disabled: false
-    //     },
-    //     '2021-12-01': {
-    //         value: "$5",
-    //         disabled: false
-    //     },
-    //     '2022-01-01': {
-    //         value: "$5",
-    //         disabled: false
-    //     }
-    // },
-    // {
-    //     name: "Amanda's Budget",
-    //     id: "68498530053932260",
-    //     '2021-01-01': {
-    //         value: "$2000",
-    //         disabled: false
-    //     },
-    //     '2021-02-01': {
-    //         value: "$2000",
-    //         disabled: false
-    //     },
-    //     '2021-03-01': {
-    //         value: "$2000",
-    //         disabled: false
-    //     },
-    //     '2021-04-01': {
-    //         value: "$2000",
-    //         disabled: false
-    //     },
-    //     '2021-05-01': {
-    //         value: "--",
-    //         disabled: true
-    //     },
-    //     '2021-06-01': {
-    //         value: "--",
-    //         disabled: true
-    //     },
-    //     '2021-07-01': {
-    //         value: "--",
-    //         disabled: true
-    //     },
-    //     '2021-08-01': {
-    //         value: "--",
-    //         disabled: true
-    //     },
-    //     '2021-09-01': {
-    //         value: "--",
-    //         disabled: true
-    //     },
-    //     '2021-10-01': {
-    //         value: "--",
-    //         disabled: true
-    //     },
-    //     '2021-11-01': {
-    //         value: "--",
-    //         disabled: true
-    //     },
-    //     '2021-12-01': {
-    //         value: "--",
-    //         disabled: true
-    //     },
-    //     '2022-01-01': {
-    //         value: "--",
-    //         disabled: true
-    //     }
-    // }
-  ];
+  const newRows = [...rows];
+  newRows[rowIndex] = { ...row, isExpanded: !row.isExpanded };
+  if (!row.isExpanded) {
+    newRows.splice(rowIndex + 1, 0, ...children);
+  } else {
+    newRows.splice(rowIndex + 1, children.length);
+  }
+  return newRows;
+}
+
+function reducer(rows: Row[], { type, id, newRows }: Action): Row[] {
+  switch (type) {
+    case 'toggleSubRow':
+      return toggleSubRow(rows, id);
+    case 'updateRows':
+        return newRows;
+    default:
+      return rows;
+  }
 }
 
 export function LolaFeatures() {
-  const [rows, setRows] = useState(() => createRows());
+  const [rows, dispatch] = useReducer(reducer, createRows());
   const [selectedRows, setSelectedRows] = useState(() => new Set<React.Key>());
   const gridRef = useRef<DataGridHandle>(null);
+   const columns: Column<Row>[] = useMemo(() => {
+       return [
+           {
+               key: "name",
+               name: "Name",
+               width: 285,
+               frozen: true,
+               formatter({ row, isCellSelected }) {
+                 const hasChildren = row.children !== undefined;
+                 const style = hasChildren ? { color: '#1A60E8' } : undefined;
+                 const isChild = !!row.parentId;
+                 const childStyle = { marginLeft: 26 };
+                 return (
+                   <>
+                     {hasChildren && (
+                       <CellExpanderFormatter
+                         isCellSelected={isCellSelected}
+                         expanded={row.isExpanded === true}
+                         onCellExpand={() => dispatch({ id: row.id, type: 'toggleSubRow' })}
+                       />
+                     )}
+                     <div className="rdg-cell-value">
+                       <div style={isChild ? childStyle : style}>
+                         {isChild ? `- ${row.name}` : row.name}
+                       </div>
+                     </div>
+                   </>
+                 );
+               }
+           },
+           {key: "options", name: "", frozenAlignment: "right", width: 54, frozen: true},
+           {key: "2021-01-01", name: "Jan 2021", width: 116, alignment: "right", editor: TextEditor},
+           {key: "2021-02-01", name: "Feb 2021", width: 116, alignment: "right", editor: TextEditor},
+           {key: "2021-03-01", name: "Mar 2021", width: 116, alignment: "right", editor: TextEditor},
+           {key: "2021-04-01", name: "Apr 2021", width: 116, alignment: "right", editor: TextEditor},
+           {key: "2021-05-01", name: "May 2021", width: 116, alignment: "right", editor: TextEditor},
+           {key: "2021-06-01", name: "Jun 2021", width: 116, alignment: "right", editor: TextEditor},
+           {key: "2021-07-01", name: "Jul 2021", width: 116, alignment: "right", editor: TextEditor},
+           {key: "2021-08-01", name: "Aug 2021", width: 116, alignment: "right", editor: TextEditor},
+           {key: "2021-09-01", name: "Sep 2021", width: 116, alignment: "right", editor: TextEditor},
+           {key: "2021-10-01", name: "Oct 2021", width: 116, alignment: "right", editor: TextEditor},
+           {key: "2021-11-01", name: "Nov 2021", width: 116, alignment: "right", editor: TextEditor},
+           {key: "2021-12-01", name: "Dec 2021", width: 116, alignment: "right", editor: TextEditor},
+           {key: "2022-01-01", name: "Jan 2022", width: 116, alignment: "right", editor: TextEditor}
+       ];
+   }, []);
 
   function handleFill({ columnKey, targetCols, sourceRow, targetRows, across }: FillEvent<Row, TSummaryRow>): Row[] {
       if (across) {
@@ -717,6 +161,14 @@ export function LolaFeatures() {
     });
   }
 
+  function handleExpandRow({ id, type }) {
+      return dispatch({ id, type });
+  }
+
+  function handleUpdateRows(rows) {
+      return dispatch({ type: 'updateRows', newRows: rows });
+  }
+
   return (
     <div className="all-features">
       <DataGrid
@@ -724,13 +176,14 @@ export function LolaFeatures() {
         columns={columns}
         rows={rows}
         rowKeyGetter={rowKeyGetter}
-        onRowsChange={setRows}
+        onRowsChange={handleUpdateRows}
         onFill={handleFill}
         onPaste={handlePaste}
         rowHeight={60}
         headerRowHeight={48}
         selectedRows={selectedRows}
         onSelectedRowsChange={setSelectedRows}
+        expandRow={handleExpandRow}
         enableOptionsCol
       />
     </div>

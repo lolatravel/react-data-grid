@@ -32,13 +32,15 @@ function Cell<R, SR>({
   gridWidth,
   scrolledToEnd,
   cell,
-  scrollLeft
+  scrollLeft,
+  expandRow
 }: CellRendererProps<R, SR>, ref: React.Ref<HTMLDivElement>) {
   const cellRef = useRef<HTMLDivElement>(null);
   const disabled = checkIfCellDisabled(cell);
   const error = typeof cell === 'object' && cell.error;
   const frozen = column.frozen;
   const frozenRightAlign = column.frozenAlignment && column.frozenAlignment === 'right';
+  const hasChildren = row.children && row.children.length > 0;
 
   const { cellClass } = column;
   className = clsx(
@@ -173,6 +175,14 @@ function Cell<R, SR>({
       return false;
   }
 
+  function handleClickToExpand() {
+      if (column.key !== 'name') return;
+      if (!expandRow) return;
+      if (!hasChildren) return;
+
+      expandRow(row, 'toggleSubRow');
+  }
+
   return (
     <div
       role="gridcell"
@@ -187,6 +197,7 @@ function Cell<R, SR>({
       onMouseDown={handleMouseDown}
       onMouseEnter={handleMouseEnter}
       onDoubleClick={wrapEvent(handleDoubleClick, onDoubleClick)}
+      onClick={handleClickToExpand}
     >
       {!column.rowGroup && (
         <>
