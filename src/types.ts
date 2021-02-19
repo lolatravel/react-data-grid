@@ -79,6 +79,7 @@ export interface CellType {
     value: string;
     disabled?: boolean;
     error?: boolean;
+    alert?: string;
 };
 
 export interface FormatterProps<TRow = any> {

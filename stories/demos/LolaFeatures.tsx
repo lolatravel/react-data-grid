@@ -161,8 +161,8 @@ export function LolaFeatures() {
     });
   }
 
-  function handleExpandRow({ id, type }) {
-      return dispatch({ id, type });
+  function handleExpandRow({ id }) {
+      return dispatch({ id, type: 'toggleSubRow' });
   }
 
   function handleUpdateRows(rows) {

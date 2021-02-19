@@ -2,19 +2,19 @@ export interface Row {
     id: string,
     name: string,
     parentId?: string,
-    '2021-01-01': {value: string, disabled?: boolean, error?: boolean},
-    '2021-02-01': {value: string, disabled?: boolean, error?: boolean},
-    '2021-03-01': {value: string, disabled?: boolean, error?: boolean},
-    '2021-04-01': {value: string, disabled?: boolean, error?: boolean},
-    '2021-05-01': {value: string, disabled?: boolean, error?: boolean},
-    '2021-06-01': {value: string, disabled?: boolean, error?: boolean},
-    '2021-07-01': {value: string, disabled?: boolean, error?: boolean},
-    '2021-08-01': {value: string, disabled?: boolean, error?: boolean},
-    '2021-09-01': {value: string, disabled?: boolean, error?: boolean},
-    '2021-10-01': {value: string, disabled?: boolean, error?: boolean},
-    '2021-11-01': {value: string, disabled?: boolean, error?: boolean},
-    '2021-12-01': {value: string, disabled?: boolean, error?: boolean},
-    '2022-01-01': {value: string, disabled?: boolean, error?: boolean},
+    '2021-01-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
+    '2021-02-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
+    '2021-03-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
+    '2021-04-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
+    '2021-05-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
+    '2021-06-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
+    '2021-07-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
+    '2021-08-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
+    '2021-09-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
+    '2021-10-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
+    '2021-11-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
+    '2021-12-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
+    '2022-01-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
     children?: Row[],
     isExpanded?: boolean
 };
@@ -79,7 +79,7 @@ export function createRows(): Row[] {
         },
         children: [{
             name: "Travel",
-            id: "20613843566739542-0",
+            id: "20613843566739542-other",
             parentId: "20613843566739542",
             '2021-01-01': {
                 value: "--",
@@ -140,7 +140,8 @@ export function createRows(): Row[] {
         id: "25338270430806944",
         '2021-01-01': {
             value: "$10,000",
-            disabled: false
+            disabled: false,
+            alert: 'The sum of the sub-budgets must equal the parent budget.'
         },
         '2021-02-01': {
             value: "$10,000",
@@ -189,7 +190,65 @@ export function createRows(): Row[] {
         '2022-01-01': {
             value: "--",
             disabled: true
-        }
+        },
+        children: [{
+            name: "Travel",
+            id: "25338270430806944-other",
+            parentId: "25338270430806944",
+            '2021-01-01': {
+                value: "$10,000",
+                disabled: false,
+                error: true
+            },
+            '2021-02-01': {
+                value: "$10,000",
+                disabled: false
+            },
+            '2021-03-01': {
+                value: "$10,000",
+                disabled: false
+            },
+            '2021-04-01': {
+                value: "$10,000",
+                disabled: false
+            },
+            '2021-05-01': {
+                value: "$10,000",
+                disabled: false
+            },
+            '2021-06-01': {
+                value: "$10,000",
+                disabled: false
+            },
+            '2021-07-01': {
+                value: "$10,000",
+                disabled: false
+            },
+            '2021-08-01': {
+                value: "--",
+                disabled: true
+            },
+            '2021-09-01': {
+                value: "--",
+                disabled: true
+            },
+            '2021-10-01': {
+                value: "--",
+                disabled: true
+            },
+            '2021-11-01': {
+                value: "--",
+                disabled: true
+            },
+            '2021-12-01': {
+                value: "--",
+                disabled: true
+            },
+            '2022-01-01': {
+                value: "--",
+                disabled: true
+            },
+        }]
     },
     {
         name: "Engineering",

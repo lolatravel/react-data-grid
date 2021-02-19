@@ -1,4 +1,6 @@
-import React, { forwardRef, memo, useRef } from 'react';
+import React, { forwardRef, memo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { usePopper } from 'react-popper';
 import clsx from 'clsx';
 
 import type { CellRendererProps } from './types';
@@ -38,6 +40,7 @@ function Cell<R, SR>({
   const cellRef = useRef<HTMLDivElement>(null);
   const disabled = checkIfCellDisabled(cell);
   const error = typeof cell === 'object' && cell.error;
+  const alert = typeof cell === 'object' && cell.alert;
   const frozen = column.frozen;
   const frozenRightAlign = column.frozenAlignment && column.frozenAlignment === 'right';
   const hasChildren = row.children && row.children.length > 0;
@@ -55,11 +58,19 @@ function Cell<R, SR>({
       'rdg-cell-dragged-over': checkIsDraggedOver(),
       'rdg-cell-align-right': column.alignment === 'right',
       'rdg-cell-disabled': disabled,
-      'rdg-cell-error': error
+      'rdg-cell-error': error,
+      'rdg-cell-alert': alert
     },
     typeof cellClass === 'function' ? cellClass(row) : cellClass,
     className
   );
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [reference, setReference] = useState<HTMLDivElement | null>(null);
+  const [popper, setPopper] = useState<HTMLDivElement | null>(null);
+  const { styles } = usePopper(reference, popper, {
+    placement: 'top',
+    modifiers: [{ name: 'offset', options: { offset: [0, 8] } }]
+  });
 
   function checkIsDraggedOver() {
       if (disabled || frozen || !isDraggedOver) {
@@ -98,6 +109,16 @@ function Cell<R, SR>({
   function handleMouseEnter(event: React.MouseEvent<HTMLDivElement>) {
       if (event.buttons === 1) {
         handleDragEnter(column.idx);
+      }
+
+      if (alert) {
+          setShowTooltip(true);
+      }
+  }
+
+  function handleMouseLeave() {
+      if (alert) {
+          setShowTooltip(false);
       }
   }
 
@@ -196,6 +217,7 @@ function Cell<R, SR>({
       }}
       onMouseDown={handleMouseDown}
       onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       onDoubleClick={wrapEvent(handleDoubleClick, onDoubleClick)}
       onClick={handleClickToExpand}
     >
@@ -208,7 +230,7 @@ function Cell<R, SR>({
               'rdg-cell-fake-background-active-bottom': checkForBottomActiveBorder(),
               'rdg-cell-fake-background-active-right': checkForRightActiveBorder(),
               'rdg-cell-fake-background-active-left': checkForLeftActiveBorder()
-          })} />
+          })} ref={setReference} />
           <column.formatter
             rowIdx={rowIdx}
             cell={cell}
@@ -222,6 +244,10 @@ function Cell<R, SR>({
             <div className="rdg-cell-drag-handle" {...dragHandleProps} />
           )}
         </>
+      )}
+      {alert && showTooltip && createPortal(
+          <div ref={setPopper} className="rdg-alert" style={styles.popper}>{alert}</div>,
+          document.body
       )}
     </div>
   );
