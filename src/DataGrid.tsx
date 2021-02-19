@@ -125,6 +125,7 @@ export interface DataGridProps<R, SR = unknown> extends SharedDivProps {
   onExpandedGroupIdsChange?: (expandedGroupIds: Set<unknown>) => void;
   onFill?: (event: FillEvent<R, SR>) => R[];
   onPaste?: (event: PasteEvent<R>) => R[];
+  expandRow?: () => void;
 
   /**
    * Custom renderers
@@ -210,6 +211,7 @@ function DataGrid<R, SR>({
   style,
   rowClass,
   enableOptionsCol,
+  expandRow,
   // ARIA
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledBy,
@@ -1031,6 +1033,7 @@ function DataGrid<R, SR>({
           draggedOverColumnIdx={draggedOverColumnIdx}
           scrollLeft={scrollLeft}
           scrolledToEnd={gridRef.current ? gridRef.current.clientWidth + scrollLeft >= totalColumnWidth : false}
+          expandRow={expandRow}
         />
       );
     }

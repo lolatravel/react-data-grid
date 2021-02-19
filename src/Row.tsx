@@ -39,6 +39,7 @@ function Row<R, SR = unknown>({
   gridWidth,
   scrollLeft,
   scrolledToEnd,
+  expandRow,
   'aria-rowindex': ariaRowIndex,
   'aria-selected': ariaSelected,
   ...props
@@ -142,6 +143,7 @@ function Row<R, SR = unknown>({
             gridWidth={gridWidth}
             scrollLeft={scrollLeft}
             scrolledToEnd={scrolledToEnd}
+            expandRow={expandRow}
           />
         );
       })}
