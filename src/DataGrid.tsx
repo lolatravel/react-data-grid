@@ -60,6 +60,15 @@ type DefaultColumnOptions<R, SR> = Pick<Column<R, SR>,
   | 'sortable'
 >;
 
+interface RowsChangeParams<R, SR> {
+    newRows: R[],
+    updatedTargetRows?: R[],
+    targetRows?: R[],
+    targetCols?: CalculatedColumn<R, SR>[]
+    key?: string | null,
+    position?: {}
+}
+
 const body = globalThis.document?.body;
 
 export interface DataGridHandle {
@@ -91,7 +100,7 @@ export interface DataGridProps<R, SR = unknown> extends SharedDivProps {
   summaryRows?: readonly SR[];
   /** The getter should return a unique key for each row */
   rowKeyGetter?: (row: R) => React.Key;
-  onRowsChange?: (rows: R[], position?: R, key?: string) => void;
+  onRowsChange?: (arg0: RowsChangeParams<R, SR>) => void;
 
   /**
    * Dimensions props
@@ -493,7 +502,7 @@ function DataGrid<R, SR>({
 
     const updatedRows = [...rawRows];
     updatedRows[getRawRowIdx(selectedPosition.rowIdx)] = selectedPosition.row;
-    onRowsChange?.(updatedRows, selectedPosition.row, columns[selectedPosition.idx].key);
+    onRowsChange?.({ newRows: updatedRows, position: selectedPosition.row, key: columns[selectedPosition.idx].key});
   }
 
   function handleCopy() {
@@ -564,7 +573,7 @@ function DataGrid<R, SR>({
       updatedRows[i] = updatedTargetRows[i - startRowIndex];
     }
 
-    onRowsChange(updatedRows);
+    onRowsChange({ newRows: updatedRows });
     setDraggedOverRowIdx(endRowIndex - 1);
     setDraggedOverColumnIdx(idx);
     setCopiedCells(null);
@@ -615,10 +624,11 @@ function DataGrid<R, SR>({
         const targetCols = columns.filter((_, i: number) => i > firstColIdx && i <= overColIdx);
         const updatedTargetRows = onFill({ columnKey: columns[idx].key, targetCols, sourceRow, targetRows, across: true });
         const updatedRows = [...rawRows];
+        console.log(updatedTargetRows);
         for (let i = startRowIndex; i < endRowIndex; i++) {
           updatedRows[i] = updatedTargetRows[i - startRowIndex];
         }
-        onRowsChange(updatedRows);
+        onRowsChange({ newRows: updatedRows, updatedTargetRows, targetCols, targetRows });
     } else {
         const startRowIndex = rowIdx < overRowIdx ? rowIdx + 1 : overRowIdx;
         const endRowIndex = rowIdx < overRowIdx ? overRowIdx + 1 : rowIdx;
@@ -629,7 +639,8 @@ function DataGrid<R, SR>({
         for (let i = startRowIndex; i < endRowIndex; i++) {
           updatedRows[i] = updatedTargetRows[i - startRowIndex];
         }
-        onRowsChange(updatedRows);
+        console.log(updatedTargetRows);
+        onRowsChange({ newRows: updatedRows, updatedTargetRows, targetRows });
     }
     setCopiedCells(null);
   }
@@ -692,13 +703,13 @@ function DataGrid<R, SR>({
     for (let i = rowIdx + 1; i < updatedRows.length; i++) {
       updatedRows[i] = updatedTargetRows[i - rowIdx - 1];
     }
-    onRowsChange(updatedRows);
+    onRowsChange({ newRows: updatedRows });
   }
 
   function handleFormatterRowChange(rowIdx: number, row: Readonly<R>) {
     const newRows = [...rawRows];
     newRows[rowIdx] = row;
-    onRowsChange?.(newRows);
+    onRowsChange?.({ newRows });
   }
 
   function handleEditorRowChange(row: Readonly<R>, commitChanges?: boolean) {
@@ -706,7 +717,7 @@ function DataGrid<R, SR>({
     if (commitChanges) {
       const updatedRows = [...rawRows];
       updatedRows[getRawRowIdx(selectedPosition.rowIdx)] = row;
-      onRowsChange?.(updatedRows);
+      onRowsChange?.({ newRows: updatedRows });
       closeEditor();
     } else {
       setSelectedPosition(position => ({ ...position, row }));
