@@ -624,7 +624,6 @@ function DataGrid<R, SR>({
         const targetCols = columns.filter((_, i: number) => i > firstColIdx && i <= overColIdx);
         const updatedTargetRows = onFill({ columnKey: columns[idx].key, targetCols, sourceRow, targetRows, across: true });
         const updatedRows = [...rawRows];
-        console.log(updatedTargetRows);
         for (let i = startRowIndex; i < endRowIndex; i++) {
           updatedRows[i] = updatedTargetRows[i - startRowIndex];
         }
@@ -639,7 +638,6 @@ function DataGrid<R, SR>({
         for (let i = startRowIndex; i < endRowIndex; i++) {
           updatedRows[i] = updatedTargetRows[i - startRowIndex];
         }
-        console.log(updatedTargetRows);
         onRowsChange({ newRows: updatedRows, updatedTargetRows, targetRows });
     }
     setCopiedCells(null);
