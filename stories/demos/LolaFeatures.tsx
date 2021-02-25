@@ -24,7 +24,8 @@ export interface Row {
     '2021-12-01': {value: string, disabled?: boolean, error?: boolean},
     '2022-01-01': {value: string, disabled?: boolean, error?: boolean},
     children?: Row[],
-    isExpanded?: boolean
+    isExpanded?: boolean,
+    parentId?: string
 }
 
 export interface TSummaryRow {}
@@ -165,8 +166,8 @@ export function LolaFeatures() {
       return dispatch({ id, type: 'toggleSubRow' });
   }
 
-  function handleUpdateRows(rows) {
-      return dispatch({ type: 'updateRows', newRows: rows });
+  function handleUpdateRows({ newRows }) {
+      return dispatch({ type: 'updateRows', newRows });
   }
 
   return (

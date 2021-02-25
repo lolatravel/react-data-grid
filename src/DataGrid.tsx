@@ -638,7 +638,7 @@ function DataGrid<R, SR>({
         for (let i = startRowIndex; i < endRowIndex; i++) {
           updatedRows[i] = updatedTargetRows[i - startRowIndex];
         }
-        onRowsChange({ newRows: updatedRows, updatedTargetRows, targetRows });
+        onRowsChange({ newRows: updatedRows, updatedTargetRows, targetRows, key: columns[idx].key });
     }
     setCopiedCells(null);
   }
