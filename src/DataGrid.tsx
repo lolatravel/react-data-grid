@@ -66,7 +66,8 @@ interface RowsChangeParams<R, SR> {
     targetRows?: R[],
     targetCols?: CalculatedColumn<R, SR>[]
     key?: string | null,
-    position?: {}
+    position?: {},
+    type?: 'paste' | 'fill' | 'edit'
 }
 
 const body = globalThis.document?.body;
@@ -573,7 +574,7 @@ function DataGrid<R, SR>({
       updatedRows[i] = updatedTargetRows[i - startRowIndex];
     }
 
-    onRowsChange({ newRows: updatedRows, updatedTargetRows, key: columnKey });
+    onRowsChange({ newRows: updatedRows, updatedTargetRows, key: columnKey, type: 'paste' });
     setDraggedOverRowIdx(endRowIndex - 1);
     setDraggedOverColumnIdx(idx);
     setCopiedCells(null);
@@ -627,7 +628,7 @@ function DataGrid<R, SR>({
         for (let i = startRowIndex; i < endRowIndex; i++) {
           updatedRows[i] = updatedTargetRows[i - startRowIndex];
         }
-        onRowsChange({ newRows: updatedRows, updatedTargetRows, targetCols, targetRows });
+        onRowsChange({ newRows: updatedRows, updatedTargetRows, targetCols, targetRows, type: 'fill' });
     } else {
         const startRowIndex = rowIdx < overRowIdx ? rowIdx + 1 : overRowIdx;
         const endRowIndex = rowIdx < overRowIdx ? overRowIdx + 1 : rowIdx;
@@ -638,7 +639,7 @@ function DataGrid<R, SR>({
         for (let i = startRowIndex; i < endRowIndex; i++) {
           updatedRows[i] = updatedTargetRows[i - startRowIndex];
         }
-        onRowsChange({ newRows: updatedRows, updatedTargetRows, targetRows, key: columns[idx].key });
+        onRowsChange({ newRows: updatedRows, updatedTargetRows, targetRows, key: columns[idx].key, type: 'fill' });
     }
     setCopiedCells(null);
   }
