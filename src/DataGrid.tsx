@@ -573,7 +573,7 @@ function DataGrid<R, SR>({
       updatedRows[i] = updatedTargetRows[i - startRowIndex];
     }
 
-    onRowsChange({ newRows: updatedRows });
+    onRowsChange({ newRows: updatedRows, updatedTargetRows, key: columnKey });
     setDraggedOverRowIdx(endRowIndex - 1);
     setDraggedOverColumnIdx(idx);
     setCopiedCells(null);
