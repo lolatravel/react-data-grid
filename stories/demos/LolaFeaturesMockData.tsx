@@ -255,19 +255,19 @@ export function createRows(): Row[] {
         id: "26714847592858783",
         '2021-01-01': {
             value: "$200",
-            disabled: false
+            disabled: true
         },
         '2021-02-01': {
             value: "$200",
-            disabled: false
+            disabled: true
         },
         '2021-03-01': {
             value: "$200",
-            disabled: false
+            disabled: true
         },
         '2021-04-01': {
             value: "$200",
-            disabled: false
+            disabled: true
         },
         '2021-05-01': {
             value: "$200",

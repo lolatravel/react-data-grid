@@ -55,7 +55,7 @@ function Cell<R, SR>({
       'rdg-cell-frozen-last': column.isLastFrozenColumn && scrollLeft > 0,
       'rdg-cell-selected': isCellSelected,
       'rdg-cell-copied': isCopied && !disabled,
-      'rdg-cell-dragged-over': checkIsDraggedOver(),
+      'rdg-cell-dragged-over': !alert && checkIsDraggedOver(true),
       'rdg-cell-align-right': column.alignment === 'right',
       'rdg-cell-disabled': disabled,
       'rdg-cell-error': error,
@@ -72,8 +72,12 @@ function Cell<R, SR>({
     modifiers: [{ name: 'offset', options: { offset: [0, 8] } }]
   });
 
-  function checkIsDraggedOver() {
-      if (disabled || frozen || !isDraggedOver) {
+  function checkIsDraggedOver(shouldCareIfDisabled?: boolean) {
+      if (shouldCareIfDisabled && disabled) {
+          return false;
+      }
+
+      if (frozen || !isDraggedOver) {
           return false;
       }
 
