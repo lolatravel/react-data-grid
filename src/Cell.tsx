@@ -46,6 +46,8 @@ function Cell<R, SR>({
   const frozenRightAlign = column.frozenAlignment && column.frozenAlignment === 'right';
   const hasChildren = row.children && row.children.length > 0;
 
+  console.log(rowIdx);
+
   const { cellClass } = column;
   className = clsx(
     'rdg-cell',
@@ -226,6 +228,7 @@ function Cell<R, SR>({
       onMouseLeave={handleMouseLeave}
       onDoubleClick={wrapEvent(handleDoubleClick, onDoubleClick)}
       onClick={handleClickToExpand}
+      data-test-id={`${column.name || column.key}-${rowIdx}`}
     >
       {!column.rowGroup && (
         <>
