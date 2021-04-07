@@ -80,6 +80,7 @@ export interface CellType {
     disabled?: boolean;
     error?: boolean;
     alert?: string;
+    warning?: string;
 };
 
 export interface FormatterProps<TRow = any> {
@@ -151,7 +152,7 @@ export interface SelectedCellProps extends SelectedCellPropsBase {
 export interface CellRendererProps<TRow, TSummaryRow = unknown> extends Omit<React.HTMLAttributes<HTMLDivElement>, 'style' | 'children'> {
   rowIdx: number;
   column: CalculatedColumn<TRow, TSummaryRow>;
-  row: TRow;
+  row: TRow & { children?: ReactElement[] };
   cell: string | CellType;
   isCopied: boolean;
   isDraggedOver: boolean;
@@ -257,6 +258,7 @@ export interface GroupRow<TRow> {
   posInSet: number;
   setSize: number;
   startRowIndex: number;
+  children: ReactElement[];
 }
 
 interface SelectCellState extends Position {
