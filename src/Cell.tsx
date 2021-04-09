@@ -41,9 +41,12 @@ function Cell<R, SR>({
   const disabled = checkIfCellDisabled(cell);
   const error = typeof cell === 'object' && cell.error;
   const alert = typeof cell === 'object' && cell.alert;
+  const warning = typeof cell === 'object' && cell.warning;
   const frozen = column.frozen;
   const frozenRightAlign = column.frozenAlignment && column.frozenAlignment === 'right';
   const hasChildren = row.children && row.children.length > 0;
+
+  console.log(rowIdx);
 
   const { cellClass } = column;
   className = clsx(
@@ -59,7 +62,8 @@ function Cell<R, SR>({
       'rdg-cell-align-right': column.alignment === 'right',
       'rdg-cell-disabled': disabled,
       'rdg-cell-error': error,
-      'rdg-cell-alert': alert
+      'rdg-cell-alert': alert,
+      'rdg-cell-warning': warning
     },
     typeof cellClass === 'function' ? cellClass(row) : cellClass,
     className
@@ -115,13 +119,13 @@ function Cell<R, SR>({
         handleDragEnter(column.idx);
       }
 
-      if (alert) {
+      if (alert || warning) {
           setShowTooltip(true);
       }
   }
 
   function handleMouseLeave() {
-      if (alert) {
+      if (alert || warning) {
           setShowTooltip(false);
       }
   }
@@ -224,6 +228,7 @@ function Cell<R, SR>({
       onMouseLeave={handleMouseLeave}
       onDoubleClick={wrapEvent(handleDoubleClick, onDoubleClick)}
       onClick={handleClickToExpand}
+      data-test-id={`${column.name || column.key}-${rowIdx}`}
     >
       {!column.rowGroup && (
         <>
@@ -249,8 +254,8 @@ function Cell<R, SR>({
           )}
         </>
       )}
-      {alert && showTooltip && createPortal(
-          <div ref={setPopper} className="rdg-alert" style={styles.popper}>{alert}</div>,
+      {(alert || warning) && showTooltip && createPortal(
+          <div ref={setPopper} className={warning ? 'rdg-warning' : 'rdg-alert'} style={styles.popper}>{alert || warning}</div>,
           document.body
       )}
     </div>

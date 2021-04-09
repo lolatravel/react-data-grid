@@ -2,19 +2,19 @@ export interface Row {
     id: string,
     name: string,
     parentId?: string,
-    '2021-01-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
-    '2021-02-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
-    '2021-03-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
-    '2021-04-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
-    '2021-05-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
-    '2021-06-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
-    '2021-07-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
-    '2021-08-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
-    '2021-09-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
-    '2021-10-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
-    '2021-11-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
-    '2021-12-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
-    '2022-01-01': {value: string, disabled?: boolean, error?: boolean, alert?: string},
+    '2021-01-01': {value: string, disabled?: boolean, error?: boolean, alert?: string, warning?: string},
+    '2021-02-01': {value: string, disabled?: boolean, error?: boolean, alert?: string, warning?: string},
+    '2021-03-01': {value: string, disabled?: boolean, error?: boolean, alert?: string, warning?: string},
+    '2021-04-01': {value: string, disabled?: boolean, error?: boolean, alert?: string, warning?: string},
+    '2021-05-01': {value: string, disabled?: boolean, error?: boolean, alert?: string, warning?: string},
+    '2021-06-01': {value: string, disabled?: boolean, error?: boolean, alert?: string, warning?: string},
+    '2021-07-01': {value: string, disabled?: boolean, error?: boolean, alert?: string, warning?: string},
+    '2021-08-01': {value: string, disabled?: boolean, error?: boolean, alert?: string, warning?: string},
+    '2021-09-01': {value: string, disabled?: boolean, error?: boolean, alert?: string, warning?: string},
+    '2021-10-01': {value: string, disabled?: boolean, error?: boolean, alert?: string, warning?: string},
+    '2021-11-01': {value: string, disabled?: boolean, error?: boolean, alert?: string, warning?: string},
+    '2021-12-01': {value: string, disabled?: boolean, error?: boolean, alert?: string, warning?: string},
+    '2022-01-01': {value: string, disabled?: boolean, error?: boolean, alert?: string, warning?: string},
     children?: Row[],
     isExpanded?: boolean
 };
@@ -76,64 +76,7 @@ export function createRows(): Row[] {
         '2022-01-01': {
             value: "--",
             disabled: true
-        },
-        children: [{
-            name: "Travel",
-            id: "20613843566739542-other",
-            parentId: "20613843566739542",
-            '2021-01-01': {
-                value: "--",
-                disabled: true
-            },
-            '2021-02-01': {
-                value: "--",
-                disabled: true
-            },
-            '2021-03-01': {
-                value: "--",
-                disabled: true
-            },
-            '2021-04-01': {
-                value: "--",
-                disabled: true
-            },
-            '2021-05-01': {
-                value: "--",
-                disabled: true
-            },
-            '2021-06-01': {
-                value: "--",
-                disabled: true
-            },
-            '2021-07-01': {
-                value: "$0",
-                disabled: false
-            },
-            '2021-08-01': {
-                value: "$0",
-                disabled: false
-            },
-            '2021-09-01': {
-                value: "$0",
-                disabled: false
-            },
-            '2021-10-01': {
-                value: "$0",
-                disabled: false
-            },
-            '2021-11-01': {
-                value: "$0",
-                disabled: false
-            },
-            '2021-12-01': {
-                value: "$0",
-                disabled: false
-            },
-            '2022-01-01': {
-                value: "--",
-                disabled: true
-            },
-        }]
+        }
     },
     {
         name: "Sales",
@@ -192,36 +135,93 @@ export function createRows(): Row[] {
             disabled: true
         },
         children: [{
-            name: "Travel",
+            name: "Budget remainder",
             id: "25338270430806944-other",
             parentId: "25338270430806944",
             '2021-01-01': {
-                value: "$10,000",
+                value: "-$20",
+                disabled: true
+            },
+            '2021-02-01': {
+                value: "$5,000",
+                disabled: true,
+                warning: "Too much budget."
+            },
+            '2021-03-01': {
+                value: "$5,000",
+                disabled: true
+            },
+            '2021-04-01': {
+                value: "$5,000",
+                disabled: true
+            },
+            '2021-05-01': {
+                value: "$5,000",
+                disabled: true
+            },
+            '2021-06-01': {
+                value: "$5,000",
+                disabled: true
+            },
+            '2021-07-01': {
+                value: "$5,000",
+                disabled: true
+            },
+            '2021-08-01': {
+                value: "--",
+                disabled: true
+            },
+            '2021-09-01': {
+                value: "--",
+                disabled: true
+            },
+            '2021-10-01': {
+                value: "--",
+                disabled: true
+            },
+            '2021-11-01': {
+                value: "--",
+                disabled: true
+            },
+            '2021-12-01': {
+                value: "--",
+                disabled: true
+            },
+            '2022-01-01': {
+                value: "--",
+                disabled: true
+            },
+        },{
+            name: "Travel",
+            id: "25338270430806943",
+            parentId: "25338270430806944",
+            '2021-01-01': {
+                value: "$10,020",
                 disabled: false,
                 error: true
             },
             '2021-02-01': {
-                value: "$10,000",
+                value: "$5,000",
                 disabled: false
             },
             '2021-03-01': {
-                value: "$10,000",
+                value: "$5,000",
                 disabled: false
             },
             '2021-04-01': {
-                value: "$10,000",
+                value: "$5,000",
                 disabled: false
             },
             '2021-05-01': {
-                value: "$10,000",
+                value: "$5,000",
                 disabled: false
             },
             '2021-06-01': {
-                value: "$10,000",
+                value: "$5,000",
                 disabled: false
             },
             '2021-07-01': {
-                value: "$10,000",
+                value: "$5,000",
                 disabled: false
             },
             '2021-08-01': {
