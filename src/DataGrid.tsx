@@ -583,33 +583,36 @@ function DataGrid<R, SR>({
     }
 
     const copiedItems = text.split(/\n/).map(i => i.split(/[\r\s]/));
-    let updatedTargetRows = [...rawRows];
+    let updatedTargetRows = [];
+    let newRows = [...rawRows];
     const startRowIndex = rowIdx;
     const startColIndex = idx;
     let endRowIndex = rowIdx + copiedItems.length - 1;
 
     for (let i = 0; i < copiedItems.length; i++) {
         for (let ix = 0; ix < copiedItems[i].length; ix++) {
-            const row = updatedTargetRows[startRowIndex + i];
+            const row = newRows[startRowIndex + i];
             const colIdx = startColIndex + ix;
             if (
                 row &&
                 columns[colIdx] &&
                 !checkIfCellDisabled(row[columns[colIdx].key as keyof R] as unknown as CellType) &&
-                updatedTargetRows[startRowIndex + i]
+                newRows[startRowIndex + i]
             ) {
-                updatedTargetRows[startRowIndex + i] = {
+                const newRow = {
                     ...row,
                     [columns[colIdx].key]: {
                         ...row[columns[colIdx].key as keyof R],
                         value: copiedItems[i][ix]
                     }
-                }
+                };
+                newRows[startRowIndex + i] = { ...newRow };
+                updatedTargetRows.push(newRow);
             }
         }
     }
 
-    onRowsChange({ newRows: updatedTargetRows, updatedTargetRows, key: columns[idx].key, type: 'paste' });
+    onRowsChange({ newRows, updatedTargetRows, key: columns[idx].key, type: 'paste' });
     setDraggedOverRowIdx(endRowIndex);
     setDraggedOverColumnIdx(idx + copiedItems[0].length - 1);
     setCopiedCells(null);
