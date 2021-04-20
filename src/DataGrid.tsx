@@ -599,17 +599,16 @@ function DataGrid<R, SR>({
                 !checkIfCellDisabled(row[columns[colIdx].key as keyof R] as unknown as CellType) &&
                 newRows[startRowIndex + i]
             ) {
-                const newRow = {
+                newRows[startRowIndex + i] = {
                     ...row,
                     [columns[colIdx].key]: {
                         ...row[columns[colIdx].key as keyof R],
                         value: copiedItems[i][ix]
                     }
                 };
-                newRows[startRowIndex + i] = { ...newRow };
-                updatedTargetRows.push(newRow);
             }
         }
+        updatedTargetRows.push(newRows[startRowIndex + i]);
     }
 
     onRowsChange({ newRows, updatedTargetRows, key: columns[idx].key, type: 'paste' });
