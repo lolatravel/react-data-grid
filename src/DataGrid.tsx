@@ -587,6 +587,7 @@ function DataGrid<R, SR>({
     let newRows = [...rawRows];
     const startRowIndex = rowIdx;
     const startColIndex = idx;
+    const endColIndex = idx + copiedItems[0].length - 1;
     let endRowIndex = rowIdx + copiedItems.length - 1;
 
     for (let i = 0; i < copiedItems.length; i++) {
@@ -611,9 +612,11 @@ function DataGrid<R, SR>({
         updatedTargetRows.push(newRows[startRowIndex + i]);
     }
 
-    onRowsChange({ newRows, updatedTargetRows, key: columns[idx].key, type: 'paste' });
+    const targetCols = columns.slice(startColIndex, endColIndex);
+
+    onRowsChange({ newRows, updatedTargetRows, targetCols, key: columns[idx].key, type: 'paste' });
     setDraggedOverRowIdx(endRowIndex);
-    setDraggedOverColumnIdx(idx + copiedItems[0].length - 1);
+    setDraggedOverColumnIdx(endColIndex);
     setCopiedCells(null);
   }
 
