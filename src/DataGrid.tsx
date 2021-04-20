@@ -4,7 +4,8 @@ import React, {
   useRef,
   useLayoutEffect,
   useImperativeHandle,
-  useCallback
+  useCallback,
+  useEffect
 } from 'react';
 import clsx from 'clsx';
 import isEqual from 'lodash/isEqual';
@@ -295,6 +296,45 @@ function DataGrid<R, SR>({
   // Cell drag is not supported on a treegrid
   const enableCellDragAndDrop = hasGroups ? false : onFill !== undefined;
 
+  // Get paste event ready
+ //  const [clipboard, setClipboard] = useClippy();
+  useEffect(() => {
+      const clipboardListener = (event: ClipboardEvent) => {
+          const text = event.clipboardData ? event.clipboardData.getData('Text') : '';
+          handlePaste(text);
+      }
+      document.addEventListener('paste', clipboardListener);
+
+      return () => {
+          document.removeEventListener('paste', clipboardListener);
+      }
+  });
+
+  useEffect(() => {
+      const clipboardListener = (event: ClipboardEvent) => {
+          handleCopy(event);
+      }
+      document.addEventListener('copy', clipboardListener);
+
+      return () => {
+          document.removeEventListener('copy', clipboardListener);
+      }
+  });
+  // useLayoutEffect(() => {
+  //     const clipboardListener = (event: ClipboardEvent) => {
+  //         const text = event.clipboardData ? event.clipboardData.getData('Text') : '';
+  //         if (text !== clipboard) {
+  //             setClipboard(text);
+  //             handlePasteFromOutside(text);
+  //         }
+  //     }
+  //     document.addEventListener('paste', clipboardListener);
+  //
+  //     return () => {
+  //         document.removeEventListener('paste', clipboardListener);
+  //     }
+  // }, [clipboard]);
+
   /**
    * effects
    */
@@ -432,11 +472,9 @@ function DataGrid<R, SR>({
       const cKey = 67;
       const vKey = 86;
       if (keyCode === cKey) {
-        handleCopy();
         return;
       }
       if (keyCode === vKey) {
-        handlePaste();
         return;
       }
     }
@@ -506,7 +544,7 @@ function DataGrid<R, SR>({
     onRowsChange?.({ newRows: updatedRows, position: selectedPosition.row, key: columns[selectedPosition.idx].key});
   }
 
-  function handleCopy() {
+  function handleCopy(event: ClipboardEvent) {
     const { idx, rowIdx } = selectedPosition;
     const selectedCell = rawRows[rowIdx][columns[idx].key as keyof R] as unknown as CellType;
     if (typeof selectedCell === 'string' || !selectedCell.disabled) {
@@ -515,68 +553,65 @@ function DataGrid<R, SR>({
         const endRowIndex = rowIdx < overRowIdx ? overRowIdx + 1 : rowIdx + 1;
         const targetRows = overRowIdx ? rawRows.slice(startRowIndex, endRowIndex) : rawRows.slice(rowIdx, rowIdx + 1);
         setCopiedCells({ rows: targetRows, columnKey: columns[idx].key });
+
+        if (event.clipboardData) {
+            const copiedValues: string[] = [];
+            targetRows.forEach(r => {
+                const cell = r[columns[idx].key as keyof R] as unknown as CellType;
+                if (!cell.disabled) {
+                    copiedValues.push(cell.value);
+                }
+            })
+            event.clipboardData.setData('text/plain', copiedValues.join('\n'));
+            event.preventDefault();
+        }
     }
   }
 
-  function handlePaste() {
+  function handlePaste(text: string) {
     const { idx, rowIdx } = selectedPosition;
-    const targetRow = rawRows[getRawRowIdx(rowIdx)];
     const selectedCell = rawRows[rowIdx][columns[idx].key as keyof R] as unknown as CellType;
     const cellCanBePasted = !checkIfCellDisabled(selectedCell);
     if (
       !onPaste
       || !onRowsChange
-      || copiedCells === null
+      || text === ''
       || !isCellEditable(selectedPosition)
       || !cellCanBePasted
     ) {
       return;
     }
 
-    const { rows, columnKey } = copiedCells;
-    let updatedTargetRows;
+    const copiedItems = text.split(/\n/).map(i => i.split(/[\r\s]/));
+    let updatedTargetRows = [...rawRows];
     const startRowIndex = rowIdx;
-    let endRowIndex = rowIdx;
+    const startColIndex = idx;
+    let endRowIndex = rowIdx + copiedItems.length - 1;
 
-    if (rows.length > 1) {
-        const filteredRows = rows.filter(r => {
-            const cell = r[columnKey as keyof R] as unknown as CellType;
-            return !checkIfCellDisabled(cell);
-        });
-        let checkIndex = 0;
-
-        while (checkIndex < filteredRows.length && endRowIndex < rawRows.length) {
-            const cell = rawRows[endRowIndex][columnKey as keyof R] as unknown as CellType;
-            if (!checkIfCellDisabled(cell)) {
-                checkIndex += 1;
+    for (let i = 0; i < copiedItems.length; i++) {
+        for (let ix = 0; ix < copiedItems[i].length; ix++) {
+            const row = updatedTargetRows[startRowIndex + i];
+            const colIdx = startColIndex + ix;
+            if (
+                row &&
+                columns[colIdx] &&
+                !checkIfCellDisabled(row[columns[colIdx].key as keyof R] as unknown as CellType) &&
+                updatedTargetRows[startRowIndex + i]
+            ) {
+                updatedTargetRows[startRowIndex + i] = {
+                    ...row,
+                    [columns[colIdx].key]: {
+                        ...row[columns[colIdx].key as keyof R],
+                        value: copiedItems[i][ix]
+                    }
+                }
             }
-            endRowIndex += 1;
         }
-
-        updatedTargetRows = onPaste({
-          sourceRows: filteredRows,
-          sourceColumnKey: columnKey,
-          targetRows: rows.length === 1 ? [targetRow] : rawRows.slice(startRowIndex, endRowIndex),
-          targetColumnKey: columns[idx].key
-        });
-    } else {
-        endRowIndex += 1;
-        updatedTargetRows = onPaste({
-          sourceRows: rows,
-          sourceColumnKey: columnKey,
-          targetRows: [targetRow],
-          targetColumnKey: columns[idx].key
-        });
     }
 
-    const updatedRows = [...rawRows];
-    for (let i = startRowIndex; i < endRowIndex; i++) {
-      updatedRows[i] = updatedTargetRows[i - startRowIndex];
-    }
-
-    onRowsChange({ newRows: updatedRows, updatedTargetRows, key: columns[idx].key, type: 'paste' });
-    setDraggedOverRowIdx(endRowIndex - 1);
-    setDraggedOverColumnIdx(idx);
+    onRowsChange({ newRows: updatedTargetRows, updatedTargetRows, key: columns[idx].key, type: 'paste' });
+    setDraggedOverRowIdx(endRowIndex);
+    setDraggedOverColumnIdx(idx + copiedItems[0].length - 1);
     setCopiedCells(null);
   }
 

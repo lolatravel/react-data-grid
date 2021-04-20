@@ -46,8 +46,6 @@ function Cell<R, SR>({
   const frozenRightAlign = column.frozenAlignment && column.frozenAlignment === 'right';
   const hasChildren = row.children && row.children.length > 0;
 
-  console.log(rowIdx);
-
   const { cellClass } = column;
   className = clsx(
     'rdg-cell',
@@ -63,7 +61,8 @@ function Cell<R, SR>({
       'rdg-cell-disabled': disabled,
       'rdg-cell-error': error,
       'rdg-cell-alert': alert,
-      'rdg-cell-warning': warning
+      'rdg-cell-warning': warning,
+      'rdg-cell-children': hasChildren
     },
     typeof cellClass === 'function' ? cellClass(row) : cellClass,
     className
