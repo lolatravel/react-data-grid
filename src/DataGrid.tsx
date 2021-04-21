@@ -612,7 +612,7 @@ function DataGrid<R, SR>({
         updatedTargetRows.push(newRows[startRowIndex + i]);
     }
 
-    const targetCols = columns.slice(startColIndex, endColIndex);
+    const targetCols = columns.slice(startColIndex, endColIndex + 1);
 
     onRowsChange({ newRows, updatedTargetRows, targetCols, key: columns[idx].key, type: 'paste' });
     setDraggedOverRowIdx(endRowIndex);
