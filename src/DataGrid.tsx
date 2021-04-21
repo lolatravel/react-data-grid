@@ -600,11 +600,12 @@ function DataGrid<R, SR>({
                 !checkIfCellDisabled(row[columns[colIdx].key as keyof R] as unknown as CellType) &&
                 newRows[startRowIndex + i]
             ) {
+                const formatFunction = columns[colIdx].formatValue;
                 newRows[startRowIndex + i] = {
                     ...row,
                     [columns[colIdx].key]: {
                         ...row[columns[colIdx].key as keyof R],
-                        value: copiedItems[i][ix]
+                        value: formatFunction ? formatFunction({ value: copiedItems[i][ix] }) : copiedItems[i][ix]
                     }
                 };
             }

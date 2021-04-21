@@ -56,7 +56,17 @@ export interface Column<TRow, TSummaryRow = unknown> {
   filterRenderer?: React.ComponentType<FilterRendererProps<TRow, any, TSummaryRow>>;
   alignment?: string;
   frozenAlignment?: string;
+  formatValue?: (params: formatCostShape) => string;
 }
+
+interface formatCostShape {
+    value: string | number,
+    locale?: string,
+    currency?: string,
+    padDecimalsWithZeros?: boolean,
+    canBeNegative?: boolean,
+    defaultToZero?: boolean
+};
 
 export interface CalculatedColumn<TRow, TSummaryRow = unknown> extends Column<TRow, TSummaryRow> {
   idx: number;
