@@ -46,8 +46,6 @@ function Cell<R, SR>({
   const frozenRightAlign = column.frozenAlignment && column.frozenAlignment === 'right';
   const hasChildren = row.children && row.children.length > 0;
 
-  console.log(rowIdx);
-
   const { cellClass } = column;
   className = clsx(
     'rdg-cell',
