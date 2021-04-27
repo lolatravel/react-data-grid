@@ -605,7 +605,7 @@ function DataGrid<R, SR>({
         rowIdx,
         key,
         mode: 'EDIT',
-        row,
+        row: { ...row, [column.key]: { ...row[column.key as keyof R], value: '' }},
         originalRow: row
       }));
     }
