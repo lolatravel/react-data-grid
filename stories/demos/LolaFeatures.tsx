@@ -4,6 +4,7 @@ import DataGrid, { TextEditor } from '../../src';
 import type { Column, DataGridHandle, FillEvent, PasteEvent } from '../../src';
 import { CellExpanderFormatter } from './components/Formatters';
 import { createRows } from './LolaFeaturesMockData';
+import { formatCost } from '../../src/utils';
 
 import './AllFeatures.less';
 
@@ -103,19 +104,19 @@ export function LolaFeatures() {
                }
            },
            {key: "options", name: "", frozenAlignment: "right", width: 54, frozen: true},
-           {key: "2021-01-01", name: "Jan 2021", minWidth: 116, alignment: "right", editor: TextEditor},
-           {key: "2021-02-01", name: "Feb 2021", minWidth: 116, alignment: "right", editor: TextEditor},
-           {key: "2021-03-01", name: "Mar 2021", minWidth: 116, alignment: "right", editor: TextEditor},
-           {key: "2021-04-01", name: "Apr 2021", minWidth: 116, alignment: "right", editor: TextEditor},
-           {key: "2021-05-01", name: "May 2021", minWidth: 116, alignment: "right", editor: TextEditor},
-           {key: "2021-06-01", name: "Jun 2021", minWidth: 116, alignment: "right", editor: TextEditor},
-           {key: "2021-07-01", name: "Jul 2021", minWidth: 116, alignment: "right", editor: TextEditor},
-           {key: "2021-08-01", name: "Aug 2021", minWidth: 116, alignment: "right", editor: TextEditor},
-           {key: "2021-09-01", name: "Sep 2021", minWidth: 116, alignment: "right", editor: TextEditor},
-           {key: "2021-10-01", name: "Oct 2021", minWidth: 116, alignment: "right", editor: TextEditor},
-           {key: "2021-11-01", name: "Nov 2021", minWidth: 116, alignment: "right", editor: TextEditor},
-           {key: "2021-12-01", name: "Dec 2021", minWidth: 116, alignment: "right", editor: TextEditor},
-           {key: "2022-01-01", name: "Jan 2022", minWidth: 116, alignment: "right", editor: TextEditor}
+           {key: "2021-01-01", name: "Jan 2021", minWidth: 116, alignment: "right", editor: TextEditor, formatValue: formatCost},
+           {key: "2021-02-01", name: "Feb 2021", minWidth: 116, alignment: "right", editor: TextEditor, formatValue: formatCost},
+           {key: "2021-03-01", name: "Mar 2021", minWidth: 116, alignment: "right", editor: TextEditor, formatValue: formatCost},
+           {key: "2021-04-01", name: "Apr 2021", minWidth: 116, alignment: "right", editor: TextEditor, formatValue: formatCost},
+           {key: "2021-05-01", name: "May 2021", minWidth: 116, alignment: "right", editor: TextEditor, formatValue: formatCost},
+           {key: "2021-06-01", name: "Jun 2021", minWidth: 116, alignment: "right", editor: TextEditor, formatValue: formatCost},
+           {key: "2021-07-01", name: "Jul 2021", minWidth: 116, alignment: "right", editor: TextEditor, formatValue: formatCost},
+           {key: "2021-08-01", name: "Aug 2021", minWidth: 116, alignment: "right", editor: TextEditor, formatValue: formatCost},
+           {key: "2021-09-01", name: "Sep 2021", minWidth: 116, alignment: "right", editor: TextEditor, formatValue: formatCost},
+           {key: "2021-10-01", name: "Oct 2021", minWidth: 116, alignment: "right", editor: TextEditor, formatValue: formatCost},
+           {key: "2021-11-01", name: "Nov 2021", minWidth: 116, alignment: "right", editor: TextEditor, formatValue: formatCost},
+           {key: "2021-12-01", name: "Dec 2021", minWidth: 116, alignment: "right", editor: TextEditor, formatValue: formatCost},
+           {key: "2022-01-01", name: "Jan 2022", minWidth: 116, alignment: "right", editor: TextEditor, formatValue: formatCost}
        ];
    }, []);
 

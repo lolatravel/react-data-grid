@@ -4,7 +4,8 @@ import React, {
   useRef,
   useLayoutEffect,
   useImperativeHandle,
-  useCallback
+  useCallback,
+  useEffect
 } from 'react';
 import clsx from 'clsx';
 import isEqual from 'lodash/isEqual';
@@ -61,13 +62,13 @@ type DefaultColumnOptions<R, SR> = Pick<Column<R, SR>,
 >;
 
 interface RowsChangeParams<R, SR> {
-    newRows: R[],
-    updatedTargetRows?: R[],
-    targetRows?: R[],
-    targetCols?: CalculatedColumn<R, SR>[]
-    key?: string | null,
-    position?: {},
-    type?: 'paste' | 'fill' | 'edit'
+  newRows: R[];
+  updatedTargetRows?: R[];
+  targetRows?: R[];
+  targetCols?: CalculatedColumn<R, SR>[];
+  key?: string | null;
+  position?: R;
+  type?: 'paste' | 'fill' | 'edit';
 }
 
 const body = globalThis.document?.body;
@@ -295,6 +296,50 @@ function DataGrid<R, SR>({
   // Cell drag is not supported on a treegrid
   const enableCellDragAndDrop = hasGroups ? false : onFill !== undefined;
 
+  // Get paste event ready
+  //  const [clipboard, setClipboard] = useClippy();
+  useEffect(() => {
+    const clipboardListener = (event: ClipboardEvent) => {
+      const text = event.clipboardData ? event.clipboardData.getData('Text') : '';
+      if (selectedPosition.idx !== -1) {
+        handlePaste(text);
+      }
+    };
+    document.addEventListener('paste', clipboardListener);
+
+    return () => {
+      document.removeEventListener('paste', clipboardListener);
+    };
+  });
+
+  useEffect(() => {
+    const clipboardListener = (event: ClipboardEvent) => {
+      if (selectedPosition.idx !== -1) {
+        handleCopy(event);
+      }
+    };
+    document.addEventListener('copy', clipboardListener);
+
+    return () => {
+      document.removeEventListener('copy', clipboardListener);
+    };
+  });
+
+  useEffect(() => {
+    const mouseDownListener = (event: MouseEvent) => {
+      const { target } = event;
+      if (target && (target as HTMLElement).classList && !(target as HTMLElement).classList.value.includes('rdg')) {
+        setSelectedPosition({ idx: -1, rowIdx: -1, mode: 'SELECT' });
+        setDraggedOverRowIdx(undefined);
+      }
+    };
+    document.addEventListener('mousedown', mouseDownListener);
+
+    return () => {
+      document.removeEventListener('mousedown', mouseDownListener);
+    };
+  });
+
   /**
    * effects
    */
@@ -347,19 +392,19 @@ function DataGrid<R, SR>({
     if (draggedOverColumnIdx && !draggedOverColumnIdx.some(i => i === colIdx)) return;
 
     if (!colIdx && selectedCellColIdx) {
-        setOverColIdx([selectedCellColIdx]);
-        latestDraggedOverColIdx.current = selectedCellColIdx;
+      setOverColIdx([selectedCellColIdx]);
+      latestDraggedOverColIdx.current = selectedCellColIdx;
     }
 
     if (colIdx) {
-        const colIdxArray = [];
-        for (let i = selectedCellColIdx; i <= colIdx; i++) {
-            colIdxArray.push(i);
-        }
-        latestDraggedOverColIdx.current = colIdx;
-        setOverColIdx(colIdxArray);
+      const colIdxArray = [];
+      for (let i = selectedCellColIdx; i <= colIdx; i++) {
+        colIdxArray.push(i);
+      }
+      latestDraggedOverColIdx.current = colIdx;
+      setOverColIdx(colIdxArray);
     }
-  }, []);
+}, []); // eslint-disable-line
 
   /**
   * event handlers
@@ -432,11 +477,9 @@ function DataGrid<R, SR>({
       const cKey = 67;
       const vKey = 86;
       if (keyCode === cKey) {
-        handleCopy();
         return;
       }
       if (keyCode === vKey) {
-        handlePaste();
         return;
       }
     }
@@ -503,80 +546,85 @@ function DataGrid<R, SR>({
 
     const updatedRows = [...rawRows];
     updatedRows[getRawRowIdx(selectedPosition.rowIdx)] = selectedPosition.row;
-    onRowsChange?.({ newRows: updatedRows, position: selectedPosition.row, key: columns[selectedPosition.idx].key});
+    onRowsChange?.({ newRows: updatedRows, position: selectedPosition.row, key: columns[selectedPosition.idx].key });
   }
 
-  function handleCopy() {
+  function handleCopy(event: ClipboardEvent) {
     const { idx, rowIdx } = selectedPosition;
+    if (idx === -1) return;
     const selectedCell = rawRows[rowIdx][columns[idx].key as keyof R] as unknown as CellType;
     if (typeof selectedCell === 'string' || !selectedCell.disabled) {
-        const overRowIdx = latestDraggedOverRowIdx.current || rowIdx;
-        const startRowIndex = rowIdx < overRowIdx ? rowIdx : overRowIdx;
-        const endRowIndex = rowIdx < overRowIdx ? overRowIdx + 1 : rowIdx + 1;
-        const targetRows = overRowIdx ? rawRows.slice(startRowIndex, endRowIndex) : rawRows.slice(rowIdx, rowIdx + 1);
-        setCopiedCells({ rows: targetRows, columnKey: columns[idx].key });
+      const overRowIdx = latestDraggedOverRowIdx.current ?? rowIdx;
+      const startRowIndex = rowIdx < overRowIdx ? rowIdx : overRowIdx;
+      const endRowIndex = rowIdx < overRowIdx ? overRowIdx + 1 : rowIdx + 1;
+      const targetRows = overRowIdx ? rawRows.slice(startRowIndex, endRowIndex) : rawRows.slice(rowIdx, rowIdx + 1);
+      setCopiedCells({ rows: targetRows, columnKey: columns[idx].key });
+
+      if (event.clipboardData) {
+        const copiedValues: string[] = [];
+        targetRows.forEach(r => {
+          const cell = r[columns[idx].key as keyof R] as unknown as CellType;
+          if (!cell.disabled) {
+            copiedValues.push(cell.value);
+          }
+        });
+        event.clipboardData.setData('text/plain', copiedValues.join('\n'));
+        event.preventDefault();
+      }
     }
   }
 
-  function handlePaste() {
+  function handlePaste(text: string) {
     const { idx, rowIdx } = selectedPosition;
-    const targetRow = rawRows[getRawRowIdx(rowIdx)];
+    if (idx === -1) return;
     const selectedCell = rawRows[rowIdx][columns[idx].key as keyof R] as unknown as CellType;
     const cellCanBePasted = !checkIfCellDisabled(selectedCell);
     if (
       !onPaste
       || !onRowsChange
-      || copiedCells === null
+      || text === ''
       || !isCellEditable(selectedPosition)
       || !cellCanBePasted
     ) {
       return;
     }
 
-    const { rows, columnKey } = copiedCells;
-    let updatedTargetRows;
+    const copiedItems = text.split(/\n/).map(i => i.split(/[\r\s]/));
+    const updatedTargetRows = [];
+    const newRows = [...rawRows];
     const startRowIndex = rowIdx;
-    let endRowIndex = rowIdx;
+    const startColIndex = idx;
+    const endColIndex = idx + copiedItems[0].length - 1;
+    const endRowIndex = rowIdx + copiedItems.length - 1;
 
-    if (rows.length > 1) {
-        const filteredRows = rows.filter(r => {
-            const cell = r[columnKey as keyof R] as unknown as CellType;
-            return !checkIfCellDisabled(cell);
-        });
-        let checkIndex = 0;
-
-        while (checkIndex < filteredRows.length && endRowIndex < rawRows.length) {
-            const cell = rawRows[endRowIndex][columnKey as keyof R] as unknown as CellType;
-            if (!checkIfCellDisabled(cell)) {
-                checkIndex += 1;
+    for (let i = 0; i < copiedItems.length; i++) {
+      for (let ix = 0; ix < copiedItems[i].length; ix++) {
+        const row = newRows[startRowIndex + i];
+        const colIdx = startColIndex + ix;
+        if (
+          row
+                && columns[colIdx]
+                && !checkIfCellDisabled(row[columns[colIdx].key as keyof R] as unknown as CellType)
+                && newRows[startRowIndex + i]
+        ) {
+          const formatFunction = columns[colIdx].formatValue;
+          newRows[startRowIndex + i] = {
+            ...row,
+            [columns[colIdx].key]: {
+              ...row[columns[colIdx].key as keyof R],
+              value: formatFunction ? formatFunction({ value: copiedItems[i][ix] }) : copiedItems[i][ix]
             }
-            endRowIndex += 1;
+          };
         }
-
-        updatedTargetRows = onPaste({
-          sourceRows: filteredRows,
-          sourceColumnKey: columnKey,
-          targetRows: rows.length === 1 ? [targetRow] : rawRows.slice(startRowIndex, endRowIndex),
-          targetColumnKey: columns[idx].key
-        });
-    } else {
-        endRowIndex += 1;
-        updatedTargetRows = onPaste({
-          sourceRows: rows,
-          sourceColumnKey: columnKey,
-          targetRows: [targetRow],
-          targetColumnKey: columns[idx].key
-        });
+      }
+      updatedTargetRows.push(newRows[startRowIndex + i]);
     }
 
-    const updatedRows = [...rawRows];
-    for (let i = startRowIndex; i < endRowIndex; i++) {
-      updatedRows[i] = updatedTargetRows[i - startRowIndex];
-    }
+    const targetCols = columns.slice(startColIndex, endColIndex + 1);
 
-    onRowsChange({ newRows: updatedRows, updatedTargetRows, key: columns[idx].key, type: 'paste' });
-    setDraggedOverRowIdx(endRowIndex - 1);
-    setDraggedOverColumnIdx(idx);
+    onRowsChange({ newRows, updatedTargetRows, targetCols, key: columns[idx].key, type: 'paste' });
+    setDraggedOverRowIdx(endRowIndex);
+    setDraggedOverColumnIdx(endColIndex);
     setCopiedCells(null);
   }
 
@@ -605,7 +653,7 @@ function DataGrid<R, SR>({
         rowIdx,
         key,
         mode: 'EDIT',
-        row: { ...row, [column.key]: { ...row[column.key as keyof R], value: '' }},
+        row: { ...row, [column.key]: { ...row[column.key as keyof R], value: '' } },
         originalRow: row
       }));
     }
@@ -619,27 +667,27 @@ function DataGrid<R, SR>({
     const { idx, rowIdx } = selectedPosition;
     const sourceRow = rawRows[rowIdx];
     if (overColIdx !== firstColIdx) {
-        const startRowIndex = rowIdx < overRowIdx ? rowIdx : overRowIdx;
-        let endRowIndex = rowIdx < overRowIdx ? overRowIdx + 1 : rowIdx + 1;
-        const targetRows = rawRows.slice(startRowIndex, startRowIndex === endRowIndex ? endRowIndex + 1 : endRowIndex);
-        const targetCols = columns.filter((_, i: number) => i > firstColIdx && i <= overColIdx);
-        const updatedTargetRows = onFill({ columnKey: columns[idx].key, targetCols, sourceRow, targetRows, across: true });
-        const updatedRows = [...rawRows];
-        for (let i = startRowIndex; i < endRowIndex; i++) {
-          updatedRows[i] = updatedTargetRows[i - startRowIndex];
-        }
-        onRowsChange({ newRows: updatedRows, updatedTargetRows, targetCols, targetRows, type: 'fill' });
+      const startRowIndex = rowIdx < overRowIdx ? rowIdx : overRowIdx;
+      const endRowIndex = rowIdx < overRowIdx ? overRowIdx + 1 : rowIdx + 1;
+      const targetRows = rawRows.slice(startRowIndex, startRowIndex === endRowIndex ? endRowIndex + 1 : endRowIndex);
+      const targetCols = columns.filter((_, i: number) => i > firstColIdx && i <= overColIdx);
+      const updatedTargetRows = onFill({ columnKey: columns[idx].key, targetCols, sourceRow, targetRows, across: true });
+      const updatedRows = [...rawRows];
+      for (let i = startRowIndex; i < endRowIndex; i++) {
+        updatedRows[i] = updatedTargetRows[i - startRowIndex];
+      }
+      onRowsChange({ newRows: updatedRows, updatedTargetRows, targetCols, targetRows, type: 'fill' });
     } else {
-        const startRowIndex = rowIdx < overRowIdx ? rowIdx + 1 : overRowIdx;
-        const endRowIndex = rowIdx < overRowIdx ? overRowIdx + 1 : rowIdx;
-        const targetRows = rawRows.slice(startRowIndex, endRowIndex);
+      const startRowIndex = rowIdx < overRowIdx ? rowIdx + 1 : overRowIdx;
+      const endRowIndex = rowIdx < overRowIdx ? overRowIdx + 1 : rowIdx;
+      const targetRows = rawRows.slice(startRowIndex, endRowIndex);
 
-        const updatedTargetRows = onFill({ columnKey: columns[idx].key, sourceRow, targetRows, across: false });
-        const updatedRows = [...rawRows];
-        for (let i = startRowIndex; i < endRowIndex; i++) {
-          updatedRows[i] = updatedTargetRows[i - startRowIndex];
-        }
-        onRowsChange({ newRows: updatedRows, updatedTargetRows, targetRows, key: columns[idx].key, type: 'fill' });
+      const updatedTargetRows = onFill({ columnKey: columns[idx].key, sourceRow, targetRows, across: false });
+      const updatedRows = [...rawRows];
+      for (let i = startRowIndex; i < endRowIndex; i++) {
+        updatedRows[i] = updatedTargetRows[i - startRowIndex];
+      }
+      onRowsChange({ newRows: updatedRows, updatedTargetRows, targetRows, key: columns[idx].key, type: 'fill' });
     }
     setCopiedCells(null);
   }
@@ -648,7 +696,7 @@ function DataGrid<R, SR>({
     if (event.buttons !== 1) return;
     setDragging(true);
     setFilling(true);
-    setSelectedCells(draggedOverRowIdx || selectedPosition.rowIdx);
+    setSelectedCells(draggedOverRowIdx ?? selectedPosition.rowIdx);
     window.addEventListener('mouseover', onMouseOver);
     window.addEventListener('mouseup', onMouseUp);
 
@@ -824,7 +872,7 @@ function DataGrid<R, SR>({
       case 'ArrowDown':
         return { idx, rowIdx: rowIdx + 1 };
       case 'ArrowLeft':
-        return prevCol && prevCol.frozen ? { idx, rowIdx } : { idx: idx - 1, rowIdx };
+        return prevCol?.frozen ? { idx, rowIdx } : { idx: idx - 1, rowIdx };
       case 'ArrowRight':
         return { idx: idx + 1, rowIdx };
       case 'Tab':
@@ -895,11 +943,11 @@ function DataGrid<R, SR>({
     let isDraggedOver = false;
 
     if (rowIdx === draggedOverRowIdx && currentRowIdx === rowIdx) {
-        isDraggedOver = draggedOverColumnIdx.some(i => i === colIdx);
+      isDraggedOver = draggedOverColumnIdx.some(i => i === colIdx);
     } else {
-        isDraggedOver = rowIdx <= draggedOverRowIdx
-          ? rowIdx <= currentRowIdx && currentRowIdx <= draggedOverRowIdx && draggedOverColumnIdx.some(i => i === colIdx)
-          : rowIdx >= currentRowIdx && currentRowIdx >= draggedOverRowIdx && draggedOverColumnIdx.some(i => i === colIdx);
+      isDraggedOver = rowIdx <= draggedOverRowIdx
+        ? rowIdx <= currentRowIdx && currentRowIdx <= draggedOverRowIdx && draggedOverColumnIdx.some(i => i === colIdx)
+        : rowIdx >= currentRowIdx && currentRowIdx >= draggedOverRowIdx && draggedOverColumnIdx.some(i => i === colIdx);
     }
 
     return isDraggedOver ? colIdx : undefined;
@@ -935,31 +983,31 @@ function DataGrid<R, SR>({
   }
 
   function getCopiedCellIdx(row: R): number | undefined {
-      if (copiedCells === null) return undefined;
+    if (copiedCells === null) return undefined;
 
-      if (typeof rowKeyGetter !== 'function') return undefined;
+    if (typeof rowKeyGetter !== 'function') return undefined;
 
-      const key = rowKeyGetter(row);
+    const key = rowKeyGetter(row);
 
-      if (copiedCells.rows.some(r => rowKeyGetter(r) === key)) {
-          return columns.findIndex(c => c.key === copiedCells.columnKey);
-      }
+    if (copiedCells.rows.some(r => rowKeyGetter(r) === key)) {
+      return columns.findIndex(c => c.key === copiedCells.columnKey);
+    }
 
-      return undefined;
+    return undefined;
   }
 
   function hasFirstCopiedCell(row: R): boolean {
-      if (copiedCells === null) return false;
-      if (typeof rowKeyGetter !== 'function') return false;
-      const key = rowKeyGetter(row);
-      return rowKeyGetter(copiedCells.rows[0]) === key;
+    if (copiedCells === null) return false;
+    if (typeof rowKeyGetter !== 'function') return false;
+    const key = rowKeyGetter(row);
+    return rowKeyGetter(copiedCells.rows[0]) === key;
   }
 
   function hasLastCopiedCell(row: R): boolean {
-      if (copiedCells === null) return false;
-      if (typeof rowKeyGetter !== 'function') return false;
-      const key = rowKeyGetter(row);
-      return rowKeyGetter(copiedCells.rows[copiedCells.rows.length - 1]) === key;
+    if (copiedCells === null) return false;
+    if (typeof rowKeyGetter !== 'function') return false;
+    const key = rowKeyGetter(row);
+    return rowKeyGetter(copiedCells.rows[copiedCells.rows.length - 1]) === key;
   }
 
   function getViewportRows() {
@@ -1033,8 +1081,8 @@ function DataGrid<R, SR>({
           selectedPosition={selectedPosition}
           bottomRowIdx={draggedOverRowIdx && draggedOverRowIdx > selectedPosition.rowIdx ? draggedOverRowIdx : selectedPosition.rowIdx}
           dragHandleProps={{
-              onMouseDown: handleMouseDown,
-              onDoubleClick: handleDoubleClick
+            onMouseDown: handleMouseDown,
+            onDoubleClick: handleDoubleClick
           }}
           isFilling={isFilling}
           isMultipleRows={selectedPosition.rowIdx !== draggedOverRowIdx}
@@ -1114,16 +1162,16 @@ function DataGrid<R, SR>({
             onKeyDown={handleKeyDown}
           />
           <div style={{ height: Math.max(rows.length * rowHeight, clientHeight), position: 'sticky', left: 0 }}>
-          {enableOptionsCol && (
+            {enableOptionsCol && (
               <div
                 className="rdg-mock-options"
                 style={{
-                    boxShadow: scrolledToEnd ? 'none' : '-1px 0px 6px 2px rgba(0, 0, 0, 0.12)',
-                    width: scrolledToEnd ? 55 : 54,
-                    borderLeft: scrolledToEnd ? '1px solid #edeef0' : 'none'
+                  boxShadow: scrolledToEnd ? 'none' : '-1px 0px 6px 2px rgba(0, 0, 0, 0.12)',
+                  width: scrolledToEnd ? 55 : 54,
+                  borderLeft: scrolledToEnd ? '1px solid #edeef0' : 'none'
                 }}
               />
-          )}
+            )}
           </div>
           {getViewportRows()}
           {summaryRows?.map((row, rowIdx) => (

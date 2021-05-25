@@ -61,7 +61,8 @@ function Cell<R, SR>({
       'rdg-cell-disabled': disabled,
       'rdg-cell-error': error,
       'rdg-cell-alert': alert,
-      'rdg-cell-warning': warning
+      'rdg-cell-warning': warning,
+      'rdg-cell-children': hasChildren
     },
     typeof cellClass === 'function' ? cellClass(row) : cellClass,
     className
