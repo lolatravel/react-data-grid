@@ -325,20 +325,20 @@ function DataGrid<R, SR>({
     };
   });
 
-  useEffect(() => {
-    const mouseDownListener = (event: MouseEvent) => {
-      const { target } = event;
-      if (target && (target as HTMLElement).classList && !(target as HTMLElement).classList.value.includes('rdg')) {
-        setSelectedPosition({ idx: -1, rowIdx: -1, mode: 'SELECT' });
-        setDraggedOverRowIdx(undefined);
-      }
-    };
-    document.addEventListener('mousedown', mouseDownListener);
-
-    return () => {
-      document.removeEventListener('mousedown', mouseDownListener);
-    };
-  });
+  // useEffect(() => {
+  //   const mouseDownListener = (event: MouseEvent) => {
+  //     const { target } = event;
+  //     if (target && (target as HTMLElement).classList && !(target as HTMLElement).classList.value.includes('rdg')) {
+  //       setSelectedPosition({ idx: -1, rowIdx: -1, mode: 'SELECT' });
+  //       setDraggedOverRowIdx(undefined);
+  //     }
+  //   };
+  //   document.addEventListener('mousedown', mouseDownListener);
+  //
+  //   return () => {
+  //     document.removeEventListener('mousedown', mouseDownListener);
+  //   };
+  // });
 
   /**
    * effects
