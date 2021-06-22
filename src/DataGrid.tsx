@@ -297,11 +297,11 @@ function DataGrid<R, SR>({
   const enableCellDragAndDrop = hasGroups ? false : onFill !== undefined;
 
   // Get paste event ready
-  //  const [clipboard, setClipboard] = useClippy();
   useEffect(() => {
     const clipboardListener = (event: ClipboardEvent) => {
-      const text = event.clipboardData ? event.clipboardData.getData('Text') : '';
-      if (selectedPosition.idx !== -1) {
+      const { clipboardData, target } = event;
+      const text = clipboardData ? clipboardData.getData('Text') : '';
+      if (selectedPosition.idx !== -1 && target && (target as HTMLElement).classList.value.includes('rdg-cell')) {
         handlePaste(text);
       }
     };
@@ -314,7 +314,8 @@ function DataGrid<R, SR>({
 
   useEffect(() => {
     const clipboardListener = (event: ClipboardEvent) => {
-      if (selectedPosition.idx !== -1) {
+      const { target } = event;
+      if (selectedPosition.idx !== -1 && target && (target as HTMLElement).classList.value.includes('rdg-cell')) {
         handleCopy(event);
       }
     };
@@ -324,21 +325,6 @@ function DataGrid<R, SR>({
       document.removeEventListener('copy', clipboardListener);
     };
   });
-
-  // useEffect(() => {
-  //   const mouseDownListener = (event: MouseEvent) => {
-  //     const { target } = event;
-  //     if (target && (target as HTMLElement).classList && !(target as HTMLElement).classList.value.includes('rdg')) {
-  //       setSelectedPosition({ idx: -1, rowIdx: -1, mode: 'SELECT' });
-  //       setDraggedOverRowIdx(undefined);
-  //     }
-  //   };
-  //   document.addEventListener('mousedown', mouseDownListener);
-  //
-  //   return () => {
-  //     document.removeEventListener('mousedown', mouseDownListener);
-  //   };
-  // });
 
   /**
    * effects
