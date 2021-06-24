@@ -58,14 +58,16 @@
 
     &::-webkit-scrollbar {
         -webkit-appearance: none;
-        height: 20px;
-        width: 20px;
+        height: 8px;
+        width: 8px;
+        background-color: #f7f7f8;
     }
     &::-webkit-scrollbar-thumb {
         border-radius: 13px;
         background-color: #dcdddf;
-        background-clip: padding-box;
-        border: 6px solid rgba(0, 0, 0, 0);
+    }
+    &::-webkit-scrollbar-corner {
+        background-color: #f7f7f8;
     }
 
     *,

@@ -74,11 +74,11 @@ export function useViewportColumns<R, SR>({
       if (rawGroupBy?.includes(bKey)) return 1;
 
       // Sort frozen columns third:
-      if (frozenA) {
-        if (frozenB) return 0;
-        return -1;
-      }
-      if (frozenB) return 1;
+      // if (frozenA) {
+      //   if (frozenB) return 0;
+      //   return -1;
+      // }
+      // if (frozenB) return 1;
 
       // Sort other columns last:
       return 0;

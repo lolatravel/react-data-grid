@@ -40,37 +40,39 @@ function Row<R, SR = unknown>({
   scrollLeft,
   scrolledToEnd,
   expandRow,
+  enableOptionsCol,
+  optionsCol,
   'aria-rowindex': ariaRowIndex,
   'aria-selected': ariaSelected,
   ...props
 }: RowRendererProps<R, SR>, ref: React.Ref<HTMLDivElement>) {
   function handleDragEnter(colIdx: number) {
-      if (isFilling && typeof selectedCellsInfo === 'number') {
-          if (selectedCellsInfo === selectedPosition.rowIdx) {
-              if (colIdx === selectedPosition.idx) {
-                  setDraggedOverRowIdx?.(rowIdx);
-              } else {
-                  setDraggedOverRowIdx?.(selectedCellsInfo);
-              }
-          } else {
-              setDraggedOverRowIdx?.(selectedCellsInfo);
-          }
-      } else {
+    if (isFilling && typeof selectedCellsInfo === 'number') {
+      if (selectedCellsInfo === selectedPosition.rowIdx) {
+        if (colIdx === selectedPosition.idx) {
           setDraggedOverRowIdx?.(rowIdx);
+        } else {
+          setDraggedOverRowIdx?.(selectedCellsInfo);
+        }
+      } else {
+        setDraggedOverRowIdx?.(selectedCellsInfo);
       }
-    if (isFilling) {
-        setDraggedOverColumnIdx?.(colIdx);
     } else {
-        setDraggedOverColumnIdx?.(selectedPosition.idx);
+      setDraggedOverRowIdx?.(rowIdx);
+    }
+    if (isFilling) {
+      setDraggedOverColumnIdx?.(colIdx);
+    } else {
+      setDraggedOverColumnIdx?.(selectedPosition.idx);
     }
   }
 
   function hasJustFilled() {
-      if (draggedOverColumnIdx && draggedOverColumnIdx.length > 1 && !isFilling) {
-          return true;
-      }
+    if (draggedOverColumnIdx && draggedOverColumnIdx.length > 1 && !isFilling) {
+      return true;
+    }
 
-      return false;
+    return false;
   }
 
   className = clsx(
@@ -112,7 +114,7 @@ function Row<R, SR = unknown>({
           );
         }
 
-        return (
+        return column.key !== 'options' && (
           <CellRenderer
             key={column.key}
             rowIdx={rowIdx}
@@ -147,6 +149,40 @@ function Row<R, SR = unknown>({
           />
         );
       })}
+      {enableOptionsCol && optionsCol && (
+        <CellRenderer
+          key={optionsCol.key}
+          rowIdx={rowIdx}
+          column={optionsCol}
+          row={row}
+          isCopied={false}
+          isDraggedOver={false}
+          isCellSelected={false}
+          cell={row[optionsCol.key as keyof R] as unknown as CellType}
+          hasFirstCopiedCell={hasFirstCopiedCell}
+          hasLastCopiedCell={hasLastCopiedCell}
+          isRowSelected={isRowSelected}
+          dragHandleProps={undefined}
+          onFocus={undefined}
+          onKeyDown={undefined}
+          onRowClick={onRowClick}
+          onRowChange={onRowChange}
+          selectCell={selectCell}
+          selectRow={selectRow}
+          handleCellMouseDown={handleCellMouseDown}
+          handleDragEnter={handleDragEnter}
+          selectedPosition={selectedPosition}
+          draggedOverRowIdx={draggedOverRowIdx}
+          draggedOverColumnIdx={draggedOverColumnIdx}
+          isFilling={isFilling}
+          bottomRowIdx={bottomRowIdx}
+          selectedCellsInfo={selectedCellsInfo}
+          gridWidth={gridWidth}
+          scrollLeft={scrollLeft}
+          scrolledToEnd={scrolledToEnd}
+          expandRow={expandRow}
+        />
+      )}
     </div>
   );
 }

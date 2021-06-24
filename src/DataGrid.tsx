@@ -136,7 +136,7 @@ export interface DataGridProps<R, SR = unknown> extends SharedDivProps {
   onExpandedGroupIdsChange?: (expandedGroupIds: Set<unknown>) => void;
   onFill?: (event: FillEvent<R, SR>) => R[];
   onPaste?: (event: PasteEvent<R>) => R[];
-  expandRow?: () => void;
+  expandRow?: (row: R) => void;
 
   /**
    * Custom renderers
@@ -301,7 +301,7 @@ function DataGrid<R, SR>({
     const clipboardListener = (event: ClipboardEvent) => {
       const { clipboardData, target } = event;
       const text = clipboardData ? clipboardData.getData('Text') : '';
-      if (selectedPosition.idx !== -1 && target && (target as HTMLElement).classList.value.includes('rdg-cell')) {
+      if (selectedPosition.idx !== -1 && target) {
         handlePaste(text);
       }
     };
@@ -315,7 +315,7 @@ function DataGrid<R, SR>({
   useEffect(() => {
     const clipboardListener = (event: ClipboardEvent) => {
       const { target } = event;
-      if (selectedPosition.idx !== -1 && target && (target as HTMLElement).classList.value.includes('rdg-cell')) {
+      if (selectedPosition.idx !== -1 && target) {
         handleCopy(event);
       }
     };
@@ -656,7 +656,7 @@ function DataGrid<R, SR>({
       const startRowIndex = rowIdx < overRowIdx ? rowIdx : overRowIdx;
       const endRowIndex = rowIdx < overRowIdx ? overRowIdx + 1 : rowIdx + 1;
       const targetRows = rawRows.slice(startRowIndex, startRowIndex === endRowIndex ? endRowIndex + 1 : endRowIndex);
-      const targetCols = columns.filter((_, i: number) => i > firstColIdx && i <= overColIdx);
+      const targetCols = columns.filter((column, i: number) => i > firstColIdx && i <= overColIdx);
       const updatedTargetRows = onFill({ columnKey: columns[idx].key, targetCols, sourceRow, targetRows, across: true });
       const updatedRows = [...rawRows];
       for (let i = startRowIndex; i < endRowIndex; i++) {
@@ -851,6 +851,7 @@ function DataGrid<R, SR>({
     }
 
     const prevCol = columns[idx - 1];
+    const nextCol = columns[idx + 1];
 
     switch (key) {
       case 'ArrowUp':
@@ -858,9 +859,9 @@ function DataGrid<R, SR>({
       case 'ArrowDown':
         return { idx, rowIdx: rowIdx + 1 };
       case 'ArrowLeft':
-        return prevCol?.frozen ? { idx, rowIdx } : { idx: idx - 1, rowIdx };
+        return prevCol?.editable ? { idx: idx - 1, rowIdx } : { idx, rowIdx };
       case 'ArrowRight':
-        return { idx: idx + 1, rowIdx };
+        return nextCol?.editable ? { idx: idx + 1, rowIdx } : { idx, rowIdx };
       case 'Tab':
         if (selectedPosition.idx === -1 && selectedPosition.rowIdx === -1) {
           return shiftKey ? { idx: columns.length - 1, rowIdx: rows.length - 1 } : { idx: 0, rowIdx: 0 };
@@ -1078,6 +1079,8 @@ function DataGrid<R, SR>({
           scrollLeft={scrollLeft}
           scrolledToEnd={gridRef.current ? gridRef.current.clientWidth + scrollLeft >= totalColumnWidth : false}
           expandRow={expandRow}
+          enableOptionsCol={enableOptionsCol}
+          optionsCol={columns[columns.length - 1]}
         />
       );
     }
@@ -1131,6 +1134,8 @@ function DataGrid<R, SR>({
         gridWidth={gridWidth}
         scrollLeft={scrollLeft}
         scrolledToEnd={scrolledToEnd}
+        enableOptionsCol={enableOptionsCol}
+        optionsCol={columns[columns.length - 1]}
       />
       {enableFilterRow && (
         <FilterRow<R, SR>

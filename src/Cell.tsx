@@ -42,7 +42,7 @@ function Cell<R, SR>({
   const error = typeof cell === 'object' && cell.error;
   const alert = typeof cell === 'object' && cell.alert;
   const warning = typeof cell === 'object' && cell.warning;
-  const frozen = column.frozen;
+  const { frozen } = column;
   const frozenRightAlign = column.frozenAlignment && column.frozenAlignment === 'right';
   const hasChildren = row.children && row.children.length > 0;
 
@@ -76,63 +76,63 @@ function Cell<R, SR>({
   });
 
   function checkIsDraggedOver(shouldCareIfDisabled?: boolean) {
-      if (shouldCareIfDisabled && disabled) {
-          return false;
-      }
+    if (shouldCareIfDisabled && disabled) {
+      return false;
+    }
 
-      if (frozen || !isDraggedOver) {
-          return false;
-      }
+    if (frozen ?? !isDraggedOver) {
+      return false;
+    }
 
-      if (selectedCellsInfo === selectedPosition.rowIdx && isFilling) {
-          return false;
-      }
+    if (selectedCellsInfo === selectedPosition.rowIdx && isFilling) {
+      return false;
+    }
 
-      if (selectedCellsInfo !== selectedPosition.rowIdx && column.idx !== draggedOverColumnIdx?.[0] && isFilling) {
-          return false;
-      }
+    if (selectedCellsInfo !== selectedPosition.rowIdx && column.idx !== draggedOverColumnIdx?.[0] && isFilling) {
+      return false;
+    }
 
-      return isDraggedOver;
+    return isDraggedOver;
   }
 
   function selectCellWrapper(openEditor?: boolean) {
     if (!dragHandleProps) {
-        selectCell({ idx: column.idx, rowIdx }, openEditor);
+      selectCell({ idx: column.idx, rowIdx }, openEditor);
     }
 
     if (dragHandleProps && openEditor) {
-        selectCell({ idx: column.idx, rowIdx }, openEditor);
+      selectCell({ idx: column.idx, rowIdx }, openEditor);
     }
   }
 
   function handleMouseDown(event: React.MouseEvent<HTMLDivElement>) {
-      event.preventDefault();
-      if (event.buttons === 2) return;
-      if (disabled || frozen || frozenRightAlign) return;
-      selectCellWrapper(false);
-      handleCellMouseDown(event);
+    event.preventDefault();
+    if (event.buttons === 2) return;
+    if (disabled || frozenRightAlign) return;
+    selectCellWrapper(false);
+    handleCellMouseDown(event);
   }
 
   function handleMouseEnter(event: React.MouseEvent<HTMLDivElement>) {
-      if (event.buttons === 1) {
-        handleDragEnter(column.idx);
-      }
+    if (event.buttons === 1) {
+      handleDragEnter(column.idx);
+    }
 
-      if (alert || warning) {
-          setShowTooltip(true);
-      }
+    if (alert ?? warning) {
+      setShowTooltip(true);
+    }
   }
 
   function handleMouseLeave() {
-      if (alert || warning) {
-          setShowTooltip(false);
-      }
+    if (alert ?? warning) {
+      setShowTooltip(false);
+    }
   }
 
   function handleDoubleClick() {
-      if (!disabled && !frozen && !frozenRightAlign) {
-          selectCellWrapper(true);
-      }
+    if (!disabled && !frozen && !frozenRightAlign) {
+      selectCellWrapper(true);
+    }
   }
 
   function handleRowChange(newRow: R) {
@@ -144,71 +144,71 @@ function Cell<R, SR>({
   }
 
   function checkForTopActiveBorder(): boolean {
-      if (isFilling) {
-          if (selectedPosition.rowIdx === rowIdx && isDraggedOver && selectedPosition.rowIdx !== bottomRowIdx) {
-              return true;
-          }
-
-          if (selectedPosition.rowIdx === bottomRowIdx && isDraggedOver && draggedOverRowIdx === rowIdx && !checkIsDraggedOver()) {
-              return true;
-          }
+    if (isFilling) {
+      if (selectedPosition.rowIdx === rowIdx && isDraggedOver && selectedPosition.rowIdx !== bottomRowIdx) {
+        return true;
       }
 
-      if (isCopied && hasFirstCopiedCell) {
-          return true;
+      if (selectedPosition.rowIdx === bottomRowIdx && isDraggedOver && draggedOverRowIdx === rowIdx && !checkIsDraggedOver()) {
+        return true;
       }
+    }
 
-      return false;
+    if (isCopied && hasFirstCopiedCell) {
+      return true;
+    }
+
+    return false;
   }
 
   function checkForBottomActiveBorder(): boolean {
-      if (isFilling && rowIdx === bottomRowIdx && !checkIsDraggedOver() && isDraggedOver) {
-          return true;
-      }
+    if (isFilling && rowIdx === bottomRowIdx && !checkIsDraggedOver() && isDraggedOver) {
+      return true;
+    }
 
-      if (isCopied && hasLastCopiedCell) {
-          return true;
-      }
+    if (isCopied && hasLastCopiedCell) {
+      return true;
+    }
 
-      return false;
+    return false;
   }
 
   function checkForRightActiveBorder(): boolean {
-      if (
-          isFilling &&
-          draggedOverColumnIdx &&
-          draggedOverColumnIdx[draggedOverColumnIdx.length - 1] === column.idx &&
-          isDraggedOver &&
-          !checkIsDraggedOver()
-      ) {
-          return true;
-      }
+    if (
+      isFilling
+          && draggedOverColumnIdx
+          && draggedOverColumnIdx[draggedOverColumnIdx.length - 1] === column.idx
+          && isDraggedOver
+          && !checkIsDraggedOver()
+    ) {
+      return true;
+    }
 
-      if (isCopied) {
-          return true;
-      }
+    if (isCopied) {
+      return true;
+    }
 
-      return false;
+    return false;
   }
 
   function checkForLeftActiveBorder(): boolean {
-      if (isFilling && draggedOverColumnIdx && draggedOverColumnIdx[0] === column.idx && isDraggedOver && !checkIsDraggedOver()) {
-          return true;
-      }
+    if (isFilling && draggedOverColumnIdx && draggedOverColumnIdx[0] === column.idx && isDraggedOver && !checkIsDraggedOver()) {
+      return true;
+    }
 
-      if (isCopied) {
-          return true;
-      }
+    if (isCopied) {
+      return true;
+    }
 
-      return false;
+    return false;
   }
 
   function handleClickToExpand() {
-      if (column.key !== 'name') return;
-      if (!expandRow) return;
-      if (!hasChildren) return;
+    if (column.key !== 'name') return;
+    if (!expandRow) return;
+    if (!hasChildren) return;
 
-      expandRow(row, 'toggleSubRow');
+    expandRow(row);
   }
 
   return (
@@ -231,14 +231,17 @@ function Cell<R, SR>({
     >
       {!column.rowGroup && (
         <>
-          <div className={clsx(
-            'rdg-cell-fake-background',
-            {
-              'rdg-cell-fake-background-active-top': checkForTopActiveBorder(),
-              'rdg-cell-fake-background-active-bottom': checkForBottomActiveBorder(),
-              'rdg-cell-fake-background-active-right': checkForRightActiveBorder(),
-              'rdg-cell-fake-background-active-left': checkForLeftActiveBorder()
-          })} ref={setReference} />
+          <div
+            className={clsx(
+              'rdg-cell-fake-background',
+              {
+                'rdg-cell-fake-background-active-top': checkForTopActiveBorder(),
+                'rdg-cell-fake-background-active-bottom': checkForBottomActiveBorder(),
+                'rdg-cell-fake-background-active-right': checkForRightActiveBorder(),
+                'rdg-cell-fake-background-active-left': checkForLeftActiveBorder()
+              })}
+            ref={setReference}
+          />
           <column.formatter
             rowIdx={rowIdx}
             cell={cell}
@@ -254,8 +257,8 @@ function Cell<R, SR>({
         </>
       )}
       {(alert || warning) && showTooltip && createPortal(
-          <div ref={setPopper} className={warning ? 'rdg-warning' : 'rdg-alert'} style={styles.popper}>{alert || warning}</div>,
-          document.body
+        <div ref={setPopper} className={warning ? 'rdg-warning' : 'rdg-alert'} style={styles.popper}>{alert ?? warning}</div>,
+        document.body
       )}
     </div>
   );

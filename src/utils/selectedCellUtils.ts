@@ -91,11 +91,11 @@ export function canExitGrid<R, SR>({ cellNavigationMode, columns, rowsCount, sel
 }
 
 export function checkIfCellDisabled(cell: undefined | string | CellType): boolean {
-    if (!cell) return false;
+  if (!cell) return false;
 
-    if (typeof cell === 'string' || !cell.disabled) {
-        return false;
-    }
+  if (typeof cell === 'string' || !cell.disabled) {
+    return false;
+  }
 
-    return true;
+  return true;
 }

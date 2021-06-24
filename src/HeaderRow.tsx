@@ -21,6 +21,8 @@ export interface HeaderRowProps<R, SR> extends SharedDataGridProps<R, SR> {
   gridWidth: number;
   scrollLeft: number;
   scrolledToEnd: boolean;
+  enableOptionsCol?: boolean;
+  optionsCol?: CalculatedColumn<R, SR>;
 }
 
 function HeaderRow<R, SR>({
@@ -35,7 +37,9 @@ function HeaderRow<R, SR>({
   gridWidth,
   onSort,
   scrollLeft,
-  scrolledToEnd
+  scrolledToEnd,
+  enableOptionsCol,
+  optionsCol
 }: HeaderRowProps<R, SR>) {
   const handleAllRowsSelectionChange = useCallback((checked: boolean) => {
     if (!onSelectedRowsChange) return;
@@ -59,7 +63,7 @@ function HeaderRow<R, SR>({
       className="rdg-header-row"
     >
       {columns.map(column => {
-        return (
+        return column.key !== 'options' && (
           <HeaderCell<R, SR>
             key={column.key}
             column={column}
@@ -75,6 +79,21 @@ function HeaderRow<R, SR>({
           />
         );
       })}
+      {enableOptionsCol && optionsCol && (
+        <HeaderCell<R, SR>
+          key={optionsCol.key}
+          column={optionsCol}
+          onResize={onColumnResize}
+          allRowsSelected={allRowsSelected}
+          onAllRowsSelectionChange={handleAllRowsSelectionChange}
+          onSort={onSort}
+          sortColumn={sortColumn}
+          sortDirection={sortDirection}
+          gridWidth={gridWidth}
+          scrollLeft={scrollLeft}
+          scrolledToEnd={scrolledToEnd}
+        />
+      )}
     </div>
   );
 }

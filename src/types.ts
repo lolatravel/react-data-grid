@@ -56,17 +56,17 @@ export interface Column<TRow, TSummaryRow = unknown> {
   filterRenderer?: React.ComponentType<FilterRendererProps<TRow, any, TSummaryRow>>;
   alignment?: string;
   frozenAlignment?: string;
-  formatValue?: (params: formatCostShape) => string;
+  formatValue?: (params: FormatCostShape) => string;
 }
 
-interface formatCostShape {
-    value: string | number,
-    locale?: string,
-    currency?: string,
-    padDecimalsWithZeros?: boolean,
-    canBeNegative?: boolean,
-    defaultToZero?: boolean
-};
+export interface FormatCostShape {
+  value: string | number;
+  locale?: string;
+  currency?: string;
+  padDecimalsWithZeros?: boolean;
+  canBeNegative?: boolean;
+  defaultToZero?: boolean;
+}
 
 export interface CalculatedColumn<TRow, TSummaryRow = unknown> extends Column<TRow, TSummaryRow> {
   idx: number;
@@ -86,12 +86,12 @@ export interface Position {
 }
 
 export interface CellType {
-    value: string;
-    disabled?: boolean;
-    error?: boolean;
-    alert?: string;
-    warning?: string;
-};
+  value: string;
+  disabled?: boolean;
+  error?: boolean;
+  alert?: string;
+  warning?: string;
+}
 
 export interface FormatterProps<TRow = any> {
   rowIdx: number;
@@ -186,7 +186,7 @@ export interface CellRendererProps<TRow, TSummaryRow = unknown> extends Omit<Rea
   gridWidth: number;
   scrollLeft: number;
   scrolledToEnd: boolean;
-  expandRow?: (row: TRow, type: string) => void;
+  expandRow?: (row: TRow) => void;
 }
 
 export interface RowRendererProps<TRow, TSummaryRow = unknown> extends Omit<React.HTMLAttributes<HTMLDivElement>, 'style' | 'children'> {
@@ -220,7 +220,9 @@ export interface RowRendererProps<TRow, TSummaryRow = unknown> extends Omit<Reac
   gridWidth: number;
   scrollLeft: number;
   scrolledToEnd: boolean;
-  expandRow?: (row: TRow, type: string) => void;
+  expandRow?: (row: TRow) => void;
+  enableOptionsCol?: boolean;
+  optionsCol?: CalculatedColumn<TRow, TSummaryRow>;
 }
 
 export interface FilterRendererProps<TRow, TFilterValue = unknown, TSummaryRow = unknown> {
