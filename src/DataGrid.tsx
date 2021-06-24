@@ -301,7 +301,7 @@ function DataGrid<R, SR>({
     const clipboardListener = (event: ClipboardEvent) => {
       const { clipboardData, target } = event;
       const text = clipboardData ? clipboardData.getData('Text') : '';
-      if (selectedPosition.idx !== -1 && target && (target as HTMLElement).classList.value.includes('rdg-cell')) {
+      if (selectedPosition.idx !== -1 && target) {
         handlePaste(text);
       }
     };
@@ -315,7 +315,7 @@ function DataGrid<R, SR>({
   useEffect(() => {
     const clipboardListener = (event: ClipboardEvent) => {
       const { target } = event;
-      if (selectedPosition.idx !== -1 && target && (target as HTMLElement).classList.value.includes('rdg-cell')) {
+      if (selectedPosition.idx !== -1 && target) {
         handleCopy(event);
       }
     };
