@@ -528,7 +528,6 @@ function DataGrid<R, SR>({
           }
         });
         navigator.clipboard.writeText(copiedValues.join('\n'));
-        // event.preventDefault();
       }
     }
   }
@@ -548,7 +547,7 @@ function DataGrid<R, SR>({
       return;
     }
 
-    const copiedItems = text.split(/\n/).map(i => i.split(/[\r\s]/));
+    const copiedItems = text.split(/\n/).map(i => i.split(/[\t]/));
     const updatedTargetRows = [];
     const newRows = [...rawRows];
     const startRowIndex = rowIdx;
