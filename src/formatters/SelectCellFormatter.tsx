@@ -46,6 +46,7 @@ export function SelectCellFormatter({
         checked={value}
         onChange={handleChange}
         onClick={onClick}
+        onCopy={e => console.log(e)}
       />
       <div className="rdg-checkbox" />
     </label>

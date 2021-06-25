@@ -301,7 +301,7 @@ function DataGrid<R, SR>({
     const clipboardListener = (event: ClipboardEvent) => {
       const { clipboardData, target } = event;
       const text = clipboardData ? clipboardData.getData('Text') : '';
-      if (selectedPosition.idx !== -1 && target) {
+      if (selectedPosition.idx !== -1 && target && ((target as HTMLElement).nodeName === 'BODY') || (target as HTMLElement).className === 'rdg-text-editor-right') {
         handlePaste(text);
       }
     };
@@ -314,10 +314,13 @@ function DataGrid<R, SR>({
 
   useEffect(() => {
     const clipboardListener = (event: ClipboardEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
       const { target } = event;
-      if (selectedPosition.idx !== -1 && target) {
+      if (selectedPosition.idx !== -1 && target && ((target as HTMLElement).nodeName === 'BODY') || (target as HTMLElement).className === 'rdg-text-editor-right') {
         handleCopy(event);
       }
+      event.preventDefault();
     };
     document.addEventListener('copy', clipboardListener);
 
@@ -704,12 +707,14 @@ function DataGrid<R, SR>({
   }
 
   function handleCellMouseDown(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    event.stopPropagation();
     if (event.buttons !== 1) return;
     setDragging(true);
     window.addEventListener('mouseover', onMouseOver);
     window.addEventListener('mouseup', onMouseUp);
 
     function onMouseOver(event: MouseEvent) {
+      event.stopPropagation();
       // Trigger onMouseup in edge cases where we release the mouse button but `mouseup` isn't triggered,
       // for example when releasing the mouse button outside the iframe the grid is rendered in.
       // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
@@ -1103,6 +1108,7 @@ function DataGrid<R, SR>({
 
   return (
     <div
+      id="sheet-id"
       role={hasGroups ? 'treegrid' : 'grid'}
       aria-label={ariaLabel}
       aria-labelledby={ariaLabelledBy}

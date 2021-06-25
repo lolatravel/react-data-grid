@@ -227,7 +227,6 @@ function Cell<R, SR>({
       onMouseLeave={handleMouseLeave}
       onDoubleClick={wrapEvent(handleDoubleClick, onDoubleClick)}
       onClick={handleClickToExpand}
-      data-test-id={`${column.name || column.key}-${rowIdx}`}
     >
       {!column.rowGroup && (
         <>
