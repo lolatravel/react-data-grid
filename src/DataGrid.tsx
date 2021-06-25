@@ -4,8 +4,7 @@ import React, {
   useRef,
   useLayoutEffect,
   useImperativeHandle,
-  useCallback,
-  useEffect
+  useCallback
 } from 'react';
 import clsx from 'clsx';
 import isEqual from 'lodash/isEqual';
@@ -296,42 +295,9 @@ function DataGrid<R, SR>({
   // Cell drag is not supported on a treegrid
   const enableCellDragAndDrop = hasGroups ? false : onFill !== undefined;
 
-  // Get paste event ready
-  useEffect(() => {
-    const clipboardListener = (event: ClipboardEvent) => {
-      const { clipboardData, target } = event;
-      const text = clipboardData ? clipboardData.getData('Text') : '';
-      if (selectedPosition.idx !== -1 && target && ((target as HTMLElement).nodeName === 'BODY') || (target as HTMLElement).className === 'rdg-text-editor-right') {
-        handlePaste(text);
-      }
-    };
-    document.addEventListener('paste', clipboardListener);
-
-    return () => {
-      document.removeEventListener('paste', clipboardListener);
-    };
-  });
-
-  useEffect(() => {
-    const clipboardListener = (event: ClipboardEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
-      const { target } = event;
-      if (selectedPosition.idx !== -1 && target && ((target as HTMLElement).nodeName === 'BODY') || (target as HTMLElement).className === 'rdg-text-editor-right') {
-        handleCopy(event);
-      }
-      event.preventDefault();
-    };
-    document.addEventListener('copy', clipboardListener);
-
-    return () => {
-      document.removeEventListener('copy', clipboardListener);
-    };
-  });
-
-  /**
-   * effects
-   */
+  // /**
+  //  * effects
+  //  */
   useLayoutEffect(() => {
     if (selectedPosition === prevSelectedPosition.current || selectedPosition.mode === 'EDIT' || !isCellWithinBounds(selectedPosition)) return;
     prevSelectedPosition.current = selectedPosition;
@@ -466,9 +432,13 @@ function DataGrid<R, SR>({
       const cKey = 67;
       const vKey = 86;
       if (keyCode === cKey) {
+        handleCopy();
         return;
       }
       if (keyCode === vKey) {
+        navigator.clipboard.readText().then(clipText => {
+          handlePaste(clipText);
+        });
         return;
       }
     }
@@ -538,7 +508,7 @@ function DataGrid<R, SR>({
     onRowsChange?.({ newRows: updatedRows, position: selectedPosition.row, key: columns[selectedPosition.idx].key });
   }
 
-  function handleCopy(event: ClipboardEvent) {
+  function handleCopy() {
     const { idx, rowIdx } = selectedPosition;
     if (idx === -1) return;
     const selectedCell = rawRows[rowIdx][columns[idx].key as keyof R] as unknown as CellType;
@@ -549,7 +519,7 @@ function DataGrid<R, SR>({
       const targetRows = overRowIdx ? rawRows.slice(startRowIndex, endRowIndex) : rawRows.slice(rowIdx, rowIdx + 1);
       setCopiedCells({ rows: targetRows, columnKey: columns[idx].key });
 
-      if (event.clipboardData) {
+      if (navigator.clipboard) {
         const copiedValues: string[] = [];
         targetRows.forEach(r => {
           const cell = r[columns[idx].key as keyof R] as unknown as CellType;
@@ -557,8 +527,8 @@ function DataGrid<R, SR>({
             copiedValues.push(cell.value);
           }
         });
-        event.clipboardData.setData('text/plain', copiedValues.join('\n'));
-        event.preventDefault();
+        navigator.clipboard.writeText(copiedValues.join('\n'));
+        // event.preventDefault();
       }
     }
   }
